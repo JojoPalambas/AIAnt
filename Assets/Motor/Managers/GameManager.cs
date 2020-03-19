@@ -5,18 +5,28 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     [Header("Prefabs")]
-    public GameObject groundTilePrefab;
-    public GameObject waterTilePrefab;
+    public Tile groundTilePrefab;
+    public Tile waterTilePrefab;
+
+    [Header("Terrain")]
+    public int terrainWidth;
+    public int terrainHeight;
+    private Tile[][] terrain;
 
     // Start is called before the first frame update
     void Start()
     {
-        for (int i = -9; i <= 9; i++)
+        terrain = new Tile[terrainHeight][];
+        for (int i = 0; i < terrainHeight; i++)
         {
-            for (int j = -9; j <= 9; j++)
+            terrain[i] = new Tile[terrainWidth];
+            for (int j = 0; j < terrainWidth; j++)
             {
-                Vector2 currentHexPosition = CoordConverter.HexToPos(new Vector2Int(i, j));
-                Instantiate(groundTilePrefab, new Vector3(currentHexPosition.x, groundTilePrefab.transform.position.y, currentHexPosition.y), groundTilePrefab.transform.rotation);
+                if (groundTilePrefab != null)
+                {
+                    Vector2 currentHexPosition = CoordConverter.HexToPos(new Vector2Int(j, terrainHeight - i - 1));
+                    terrain[i][j] = Instantiate(groundTilePrefab, new Vector3(currentHexPosition.x, groundTilePrefab.transform.position.y, currentHexPosition.y), groundTilePrefab.transform.rotation);
+                }
             }
         }
     }
