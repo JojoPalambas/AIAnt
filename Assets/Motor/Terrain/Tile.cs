@@ -11,6 +11,7 @@ public enum TerrainType
 
 public class Tile : MonoBehaviour
 {
+    #pragma warning disable CS0649
     [SerializeField]
     private TerrainType type;
 

@@ -48,3 +48,8 @@ MonoBehaviour:
   waterTilePrefab: {fileID: 0}
   terrainWidth: 10
   terrainHeight: 10
+  queenPrefab: {fileID: -1403799128315622436, guid: 5a6ffe06489864f4d9672adae7146532,
+    type: 3}
+  workerPrefab: {fileID: 7627389938182149295, guid: 3256855cb81bc974ebdee8c98c522280,
+    type: 3}
+  numberOfTeams: 4
