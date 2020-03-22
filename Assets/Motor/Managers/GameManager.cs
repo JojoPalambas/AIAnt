@@ -211,9 +211,12 @@ public class GameManager : MonoBehaviour
             HexDirection randDirection = (HexDirection) Random.Range(1, 7);
 
             Vector2Int newCoord = CoordConverter.MoveHex(team.queen.gameCoordinates, randDirection);
-            if (!CheckCoordinatesValidity(newCoord))
+
+            if (!CheckWalkability(newCoord))
                 continue;
 
+            terrain[team.queen.gameCoordinates.x][team.queen.gameCoordinates.y].ant = null;
+            terrain[newCoord.x][newCoord.y].ant = team.queen;
             team.queen.gameCoordinates = newCoord;
         }
     }
@@ -221,6 +224,26 @@ public class GameManager : MonoBehaviour
     private bool CheckCoordinatesValidity(Vector2Int coord)
     {
         return coord.x >= 0 && coord.y >= 0 && coord.x < terrainWidth && coord.y < terrainHeight;
+    }
+
+    // Checks that a tile can be walked in
+    private bool CheckWalkability(Vector2Int coord)
+    {
+        if (!CheckCoordinatesValidity(coord))
+            return false;
+
+        TileContent tileContent = terrain[coord.x][coord.y];
+        if (tileContent == null)
+        {
+            Debug.Log("Tile content does not exist at coordinates " + coord.ToString());
+            return false;
+        }
+        if (tileContent.ant != null)
+            return false;
+        if (tileContent.tile == null || tileContent.tile.Type != TerrainType.GROUND)
+            return false;
+
+        return true;
     }
 
     private void Animate()
