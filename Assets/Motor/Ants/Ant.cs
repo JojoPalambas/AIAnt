@@ -25,6 +25,9 @@ public abstract class Ant : MonoBehaviour
     private int energy;
     private int carriedFood;
 
+    [Header("Display")]
+    public HexDirection displayDirection;
+
     //[Header("Animations")]
 
     public abstract AntType Type
@@ -42,16 +45,30 @@ public abstract class Ant : MonoBehaviour
     {
     }
 
-    public void MoveToTarget(float remainingTime)
+    public void RotateToTarget(float elapsedTime, float totalTime)
     {
         // The remaining time might be 0 (especially if the animation time by turn is set to 0)
-        if (remainingTime <= 0)
+        if (elapsedTime >= totalTime)
             return;
 
-        float elapsedPercentage = Time.deltaTime / remainingTime;
-        Vector3 targetPosition = CoordConverter.PlanToWorld(CoordConverter.HexToPos(gameCoordinates), transform.position.y);
+        float elapsedPercentage = elapsedTime / totalTime;
 
-        transform.position = (targetPosition * elapsedPercentage) + (transform.position * (1 - elapsedPercentage));
+        // FIXME Quite inelegant way to rotate slowly to face the next tile
+        Quaternion formerRotation = transform.rotation;
+        transform.LookAt(CoordConverter.PlanToWorld(CoordConverter.HexToPos(CoordConverter.MoveHex(gameCoordinates, displayDirection)), transform.position.y));
+        transform.rotation = Quaternion.Slerp(formerRotation, transform.rotation, elapsedPercentage);
+    }
+
+    public void MoveToTarget(float elapsedTime, float totalTime)
+    {
+        // The remaining time might be 0 (especially if the animation time by turn is set to 0)
+        if (elapsedTime >= totalTime)
+            return;
+
+        float elapsedPercentage = elapsedTime / totalTime;
+        
+        Vector3 targetPosition = CoordConverter.PlanToWorld(CoordConverter.HexToPos(gameCoordinates), transform.position.y);
+        transform.position = Vector3.Slerp(transform.position, targetPosition, elapsedPercentage);
     }
 
     public void FixAnimation()

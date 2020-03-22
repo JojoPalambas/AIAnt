@@ -4,6 +4,7 @@ using UnityEngine;
 
 public enum GameStatus
 {
+    ROTATION,
     ANIMATION,
     THINKING
 }
@@ -57,8 +58,9 @@ public class GameManager : MonoBehaviour
     private List<Team> teams;
 
     [Header("Animations")]
-    public float turnAnimationTime;
-    private float currentTurnAnimationTime;
+    public float animationTime;
+    public float rotationTime;
+    private float currentAnimationTime;
 
 
     /*
@@ -147,6 +149,33 @@ public class GameManager : MonoBehaviour
         List<Team> winningTeams = null;
         switch (status)
         {
+            case GameStatus.ROTATION:
+
+                currentAnimationTime -= Time.deltaTime;
+                Rotate();
+
+                if (currentAnimationTime <= 0)
+                {
+                    currentAnimationTime = animationTime;
+                    status = GameStatus.ANIMATION;
+                    break;
+                }
+
+                break;
+
+            case GameStatus.ANIMATION:
+
+                currentAnimationTime -= Time.deltaTime;
+                Animate();
+
+                if (currentAnimationTime <= 0)
+                {
+                    status = GameStatus.THINKING;
+                    break;
+                }
+
+                break;
+
             case GameStatus.THINKING:
 
                 FixAllAnimations();
@@ -157,21 +186,8 @@ public class GameManager : MonoBehaviour
 
                 Think();
 
-                currentTurnAnimationTime = turnAnimationTime;
-                status = GameStatus.ANIMATION;
-                break;
-
-            case GameStatus.ANIMATION:
-
-                currentTurnAnimationTime -= Time.deltaTime;
-                Animate();
-
-                if (currentTurnAnimationTime <= 0)
-                {
-                    status = GameStatus.THINKING;
-                    break;
-                }
-
+                currentAnimationTime = rotationTime;
+                status = GameStatus.ROTATION;
                 break;
 
             default:
@@ -246,15 +262,28 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    private void Rotate()
+    {
+        foreach (Team team in teams)
+        {
+            team.queen.RotateToTarget(rotationTime - currentAnimationTime, rotationTime);
+
+            foreach (Worker worker in team.workers)
+            {
+                worker.RotateToTarget(rotationTime - currentAnimationTime, rotationTime);
+            }
+        }
+    }
+
     private void Animate()
     {
         foreach (Team team in teams)
         {
-            team.queen.MoveToTarget(currentTurnAnimationTime);
+            team.queen.MoveToTarget(animationTime - currentAnimationTime, animationTime);
 
             foreach (Worker worker in team.workers)
             {
-                worker.MoveToTarget(currentTurnAnimationTime);
+                worker.MoveToTarget(animationTime - currentAnimationTime, animationTime);
             }
         }
     }
