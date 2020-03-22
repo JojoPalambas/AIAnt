@@ -2,6 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum GameStatus
+{
+    ANIMATION,
+    THINKING
+}
+
 [System.Serializable]
 public class TileContent
 {
@@ -33,6 +39,8 @@ public class Team
 
 public class GameManager : MonoBehaviour
 {
+    private GameStatus status = GameStatus.THINKING;
+
     [Header("Prefabs")]
     public Tile groundTilePrefab;
     public Tile waterTilePrefab;
@@ -48,6 +56,10 @@ public class GameManager : MonoBehaviour
     public int numberOfTeams;
     private List<Team> teams;
 
+    [Header("Animations")]
+    public float turnAnimationTime;
+    private float currentTurnAnimationTime;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -55,7 +67,8 @@ public class GameManager : MonoBehaviour
         if (terrainWidth < 2 || terrainHeight < 2)
             return;
 
-            terrain = new TileContent[terrainHeight][];
+        // Fills the terrain with tiles
+        terrain = new TileContent[terrainHeight][];
         for (int i = 0; i < terrainHeight; i++)
         {
             terrain[i] = new TileContent[terrainWidth];
@@ -96,6 +109,7 @@ public class GameManager : MonoBehaviour
 
             Vector3 queenWorldPosition = CoordConverter.PlanToWorld(CoordConverter.HexToPos(queenPosition), queenPrefab.transform.position.y);
             Queen newQueen = Instantiate(queenPrefab, queenWorldPosition, queenPrefab.transform.rotation);
+            newQueen.gameCoordinates = queenPosition;
 
             teams.Add(new Team(i, newQueen));
 
@@ -105,5 +119,85 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        List<Team> winningTeams = null;
+        switch (status)
+        {
+            case GameStatus.THINKING:
+
+                FixAllAnimations();
+                winningTeams = CheckForWin();
+
+                if (winningTeams != null && winningTeams.Count > 0)
+                    break;
+
+                Think();
+
+                currentTurnAnimationTime = turnAnimationTime;
+                status = GameStatus.ANIMATION;
+                break;
+
+            case GameStatus.ANIMATION:
+
+                currentTurnAnimationTime -= Time.deltaTime;
+                if (currentTurnAnimationTime <= 0)
+                {
+                    status = GameStatus.THINKING;
+                    break;
+                }
+                
+                Animate();
+
+                break;
+
+            default:
+
+                Debug.LogWarning("Illegal game status: " + status.ToString());
+                break;
+        }
+
+        if (winningTeams != null && winningTeams.Count > 0)
+        {
+            // Announce victory / tie
+        }
+    }
+
+    private void FixAllAnimations()
+    {
+        foreach (Team team in teams)
+        {
+            team.queen.FixAnimation();
+            
+            foreach (Worker worker in team.workers)
+            {
+                worker.FixAnimation();
+            }
+        }
+    }
+
+    private List<Team> CheckForWin()
+    {
+        return null;
+    }
+
+    private void Think()
+    {
+        foreach (Team team in teams)
+        {
+            HexDirection randDirection = (HexDirection) Random.Range(1, 7);
+            team.queen.gameCoordinates = CoordConverter.MoveHex(team.queen.gameCoordinates, randDirection);
+        }
+    }
+
+    private void Animate()
+    {
+        foreach (Team team in teams)
+        {
+            team.queen.MoveToTarget(currentTurnAnimationTime);
+
+            foreach (Worker worker in team.workers)
+            {
+                worker.MoveToTarget(currentTurnAnimationTime);
+            }
+        }
     }
 }

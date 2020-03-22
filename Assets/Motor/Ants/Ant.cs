@@ -25,6 +25,8 @@ public abstract class Ant : MonoBehaviour
     private int energy;
     private int carriedFood;
 
+    //[Header("Animations")]
+
     public abstract AntType Type
     {
         get;
@@ -38,5 +40,18 @@ public abstract class Ant : MonoBehaviour
     // Update is called once per frame
     protected void SuperUpdate()
     {
+    }
+
+    public void MoveToTarget(float remainingTime)
+    {
+        float elapsedPercentage = Time.deltaTime / remainingTime;
+        Vector3 targetPosition = CoordConverter.PlanToWorld(CoordConverter.HexToPos(gameCoordinates), transform.position.y);
+
+        transform.position = (targetPosition * elapsedPercentage) + (transform.position * (1 - elapsedPercentage));
+    }
+
+    public void FixAnimation()
+    {
+        transform.position = CoordConverter.PlanToWorld(CoordConverter.HexToPos(gameCoordinates), transform.position.y);
     }
 }
