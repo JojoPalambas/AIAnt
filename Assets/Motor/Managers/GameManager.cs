@@ -139,13 +139,13 @@ public class GameManager : MonoBehaviour
             case GameStatus.ANIMATION:
 
                 currentTurnAnimationTime -= Time.deltaTime;
+                Animate();
+
                 if (currentTurnAnimationTime <= 0)
                 {
                     status = GameStatus.THINKING;
                     break;
                 }
-                
-                Animate();
 
                 break;
 

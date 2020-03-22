@@ -44,6 +44,10 @@ public abstract class Ant : MonoBehaviour
 
     public void MoveToTarget(float remainingTime)
     {
+        // The remaining time might be 0 (especially if the animation time by turn is set to 0)
+        if (remainingTime <= 0)
+            return;
+
         float elapsedPercentage = Time.deltaTime / remainingTime;
         Vector3 targetPosition = CoordConverter.PlanToWorld(CoordConverter.HexToPos(gameCoordinates), transform.position.y);
 
