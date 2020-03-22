@@ -60,6 +60,31 @@ public class GameManager : MonoBehaviour
     public float turnAnimationTime;
     private float currentTurnAnimationTime;
 
+
+    /*
+     * HEXAGONAL TERRAIN REPRESENTATION
+     * 
+     * Hex form:
+     *     A   B   C 
+     *   D   E   F
+     * G   H   I
+     * 
+     * Hex coordinates:
+     *       (0|0) (1|0) (2|0)
+     *    (0|1) (1|1) (2|1)
+     * (0|2) (1|2) (2|2)
+     * 
+     * Terrain table form:
+     * A D G
+     * B E H
+     * C F I
+     * 
+     * Terrain table coordinates :
+     * (0|0) (0|1) (0|2)
+     * (1|0) (1|1) (1|2)
+     * (2|0) (2|1) (2|2)
+    */
+
     // Start is called before the first frame update
     void Start()
     {
@@ -68,15 +93,15 @@ public class GameManager : MonoBehaviour
             return;
 
         // Fills the terrain with tiles
-        terrain = new TileContent[terrainHeight][];
-        for (int i = 0; i < terrainHeight; i++)
+        terrain = new TileContent[terrainWidth][];
+        for (int i = 0; i < terrainWidth; i++)
         {
-            terrain[i] = new TileContent[terrainWidth];
-            for (int j = 0; j < terrainWidth; j++)
+            terrain[i] = new TileContent[terrainHeight];
+            for (int j = 0; j < terrainHeight; j++)
             {
                 if (groundTilePrefab != null)
                 {
-                    Vector2 currentHexPosition = CoordConverter.HexToPos(new Vector2Int(j, terrainHeight - i - 1));
+                    Vector2 currentHexPosition = CoordConverter.HexToPos(new Vector2Int(i, terrainHeight - j - 1));
                     Tile newTile = Instantiate(groundTilePrefab, new Vector3(currentHexPosition.x, groundTilePrefab.transform.position.y, currentHexPosition.y), groundTilePrefab.transform.rotation);
                     terrain[i][j] = new TileContent(newTile, null);
                 }
@@ -94,13 +119,13 @@ public class GameManager : MonoBehaviour
                     queenPosition = new Vector2Int(0, 0);
                     break;
                 case 1:
-                    queenPosition = new Vector2Int(terrainHeight - 1, terrainWidth - 1);
+                    queenPosition = new Vector2Int(terrainWidth - 1, terrainHeight - 1);
                     break;
                 case 2:
-                    queenPosition = new Vector2Int(terrainHeight - 1, 0);
+                    queenPosition = new Vector2Int(terrainWidth - 1, 0);
                     break;
                 case 3:
-                    queenPosition = new Vector2Int(0, terrainWidth - 1);
+                    queenPosition = new Vector2Int(0, terrainHeight - 1);
                     break;
                 default:
                     queenPosition = new Vector2Int(0, 0);
@@ -184,8 +209,18 @@ public class GameManager : MonoBehaviour
         foreach (Team team in teams)
         {
             HexDirection randDirection = (HexDirection) Random.Range(1, 7);
-            team.queen.gameCoordinates = CoordConverter.MoveHex(team.queen.gameCoordinates, randDirection);
+
+            Vector2Int newCoord = CoordConverter.MoveHex(team.queen.gameCoordinates, randDirection);
+            if (!CheckCoordinatesValidity(newCoord))
+                continue;
+
+            team.queen.gameCoordinates = newCoord;
         }
+    }
+
+    private bool CheckCoordinatesValidity(Vector2Int coord)
+    {
+        return coord.x >= 0 && coord.y >= 0 && coord.x < terrainWidth && coord.y < terrainHeight;
     }
 
     private void Animate()
