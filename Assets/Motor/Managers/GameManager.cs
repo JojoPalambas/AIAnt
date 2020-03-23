@@ -136,7 +136,7 @@ public class GameManager : MonoBehaviour
 
             Vector3 queenWorldPosition = CoordConverter.PlanToWorld(CoordConverter.HexToPos(queenPosition), queenPrefab.transform.position.y);
             Queen newQueen = Instantiate(queenPrefab, queenWorldPosition, queenPrefab.transform.rotation);
-            newQueen.gameCoordinates = queenPosition;
+            newQueen.Init(queenPosition);
 
             teams.Add(new Team(i, newQueen));
 
@@ -227,6 +227,8 @@ public class GameManager : MonoBehaviour
             HexDirection randDirection = (HexDirection) Random.Range(1, 7);
 
             Vector2Int newCoord = CoordConverter.MoveHex(team.queen.gameCoordinates, randDirection);
+
+            team.queen.displayDirection = randDirection;
 
             if (!CheckWalkability(newCoord))
                 continue;
