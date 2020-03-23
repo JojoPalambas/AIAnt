@@ -10,13 +10,6 @@ public enum VariableDescriptor
     HIGH
 }
 
-public enum AntType
-{
-    NONE,
-    WORKER,
-    QUEEN
-}
-
 public abstract class Ant : MonoBehaviour
 {
     [Header("Gameplay")]
@@ -62,7 +55,6 @@ public abstract class Ant : MonoBehaviour
 
         // FIXME Quite inelegant way to rotate slowly to face the next tile
         Quaternion formerRotation = transform.rotation;
-        Debug.Log(displayDirection);
         transform.LookAt(CoordConverter.PlanToWorld(CoordConverter.HexToPos(CoordConverter.MoveHex(displayCoordinates, displayDirection)), transform.position.y));
         transform.rotation = Quaternion.Slerp(formerRotation, transform.rotation, elapsedPercentage);
     }

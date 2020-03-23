@@ -2,17 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum HexDirection
-{
-    CENTER,
-    UPLEFT,
-    UPRIGHT,
-    LEFT,
-    RIGHT,
-    DOWNLEFT,
-    DOWNRIGHT
-}
-
 public abstract class CoordConverter
 {
     // Converts hexagon axial coordinates to world position coordinates

@@ -2,13 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum TerrainType
-{
-    NONE,
-    GROUND,
-    WATER
-}
-
 public class Tile : MonoBehaviour
 {
     #pragma warning disable CS0649
