@@ -2,6 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum Value
+{
+    NONE,
+    LOW,
+    MEDIUM,
+    HIGH
+}
+
 public enum HexDirection
 {
     CENTER,
@@ -33,7 +41,7 @@ public enum ActionType
     EGG
 }
 
-enum TurnError
+public enum TurnError
 {
     NONE,
     COLLISION_WALL,
@@ -44,7 +52,7 @@ enum TurnError
     ILLEGAL
 }
 
-enum PheromoneType
+public enum PheromoneType
 {
     NONE,
     PHER0,
@@ -53,7 +61,7 @@ enum PheromoneType
     PHER3
 }
 
-enum PheromoneIntensity
+public enum PheromoneIntensity
 {
     INT0,
     INT1,
@@ -61,7 +69,7 @@ enum PheromoneIntensity
     INT3
 }
 
-enum AntMindset
+public enum AntMindset
 {
     AMS0,
     AMS1,
@@ -73,8 +81,9 @@ enum AntMindset
     AMS7
 }
 
-enum AntWord
+public enum AntWord
 {
+    NONE,
     AW0,
     AW1,
     AW2,
