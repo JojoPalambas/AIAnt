@@ -13,6 +13,7 @@ public enum VariableDescriptor
 public abstract class Ant : MonoBehaviour
 {
     [Header("Gameplay")]
+    public Team team;
     public Vector2Int gameCoordinates;
     public AntMindset mindset;
     public int hp;
@@ -47,8 +48,9 @@ public abstract class Ant : MonoBehaviour
     {
     }
 
-    public void Init(Vector2Int gameCoordinates)
+    public void Init(Team team, Vector2Int gameCoordinates)
     {
+        this.team = team;
         this.gameCoordinates = gameCoordinates;
         this.displayCoordinates = gameCoordinates;
     }

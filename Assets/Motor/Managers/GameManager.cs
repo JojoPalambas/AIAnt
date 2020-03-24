@@ -32,13 +32,16 @@ public class Team
 
     public Queen queen;
     public List<Worker> workers;
+    public List<Worker> newBorns; // FIXME Replace this by eggs
 
     public Team(int teamId, Queen queen, AntAI ai)
     {
         this.teamId = teamId;
+        this.ai = ai;
+
         this.queen = queen;
         this.workers = new List<Worker>();
-        this.ai = ai;
+        this.newBorns = new List<Worker>();
     }
 }
 
@@ -141,9 +144,11 @@ public class GameManager : MonoBehaviour
 
             Vector3 queenWorldPosition = CoordConverter.PlanToWorld(CoordConverter.HexToPos(queenPosition), queenPrefab.transform.position.y);
             Queen newQueen = Instantiate(queenPrefab, queenWorldPosition, queenPrefab.transform.rotation);
-            newQueen.Init(queenPosition);
 
-            teams.Add(new Team(index, newQueen, ai));
+            Team newTeam = new Team(index, newQueen, ai);
+            teams.Add(newTeam);
+
+            newQueen.Init(newTeam, queenPosition);
 
             index++;
         }
@@ -263,7 +268,7 @@ public class GameManager : MonoBehaviour
 
             foreach (Worker worker in team.workers)
             {
-                worker.decision = team.ai.OnQueenTurn(new TurnInformation(
+                worker.decision = team.ai.OnWorkerTurn(new TurnInformation(
                    terrain[worker.gameCoordinates.x][worker.gameCoordinates.y].tile.Type,
                    worker.pastTurn != null ? worker.pastTurn.DeepCopy() : null,
                    worker.mindset,
@@ -290,6 +295,12 @@ public class GameManager : MonoBehaviour
             {
                 ResolveDecision(worker);
             }
+
+            foreach (Worker newBorn in team.newBorns)
+            {
+                team.workers.Add(newBorn);
+            }
+            team.newBorns = new List<Worker>();
         }
     }
 
@@ -339,8 +350,7 @@ public class GameManager : MonoBehaviour
                 return TurnError.ILLEGAL;
 
             case ActionType.EGG:
-                Debug.LogWarning("Not implemented yet");
-                return TurnError.ILLEGAL;
+                return ActEgg(ant, decision.choice.direction);
 
             default:
                 Debug.LogWarning("Unknwo ActionType: " + decision.choice.type);
@@ -360,6 +370,28 @@ public class GameManager : MonoBehaviour
         terrain[ant.gameCoordinates.x][ant.gameCoordinates.y].ant = null;
         terrain[newCoord.x][newCoord.y].ant = ant;
         ant.gameCoordinates = newCoord;
+
+        return TurnError.NONE;
+    }
+
+    private TurnError ActEgg(Ant ant, HexDirection direction)
+    {
+        if (ant.Type != AntType.QUEEN)
+            return TurnError.NOT_QUEEN;
+
+        Vector2Int eggCoord = CoordConverter.MoveHex(ant.gameCoordinates, direction);
+
+        TurnError tileError = CheckWalkability(eggCoord);
+        if (tileError != TurnError.NONE)
+            return tileError;
+
+
+        Vector3 newAntWorldPosition = CoordConverter.PlanToWorld(CoordConverter.HexToPos(eggCoord), workerPrefab.transform.position.y);
+        Worker newWorker = Instantiate(workerPrefab, newAntWorldPosition, workerPrefab.transform.rotation);
+        newWorker.Init(ant.team, eggCoord);
+
+        ant.team.newBorns.Add(newWorker);
+        terrain[eggCoord.x][eggCoord.y].ant = newWorker;
 
         return TurnError.NONE;
     }

@@ -47,6 +47,7 @@ public enum TurnError
     COLLISION_WATER,
     COLLISION_BOUNDS,
     COLLISION_VOID,
+    NOT_QUEEN, // If a non-queen ant tries to EGG
     NO_TARGET,
     ILLEGAL
 }
