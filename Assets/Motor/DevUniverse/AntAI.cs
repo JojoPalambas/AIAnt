@@ -17,7 +17,7 @@ public class TurnInformation
     public readonly AnalyseReport analyseReport;
     public readonly CommunicateReport communicateReport;
 
-    public readonly string id;
+    public readonly int id;
 
     public TurnInformation(
         TerrainType terrainType,
@@ -30,7 +30,7 @@ public class TurnInformation
         Value carriedFood,
         AnalyseReport analyseReport,
         CommunicateReport communicateReport,
-        string id)
+        int id)
     {
         this.terrainType = terrainType;
         this.pastTurn = pastTurn;

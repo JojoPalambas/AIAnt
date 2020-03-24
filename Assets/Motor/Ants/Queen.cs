@@ -12,10 +12,12 @@ public class Queen : Ant
     // Start is called before the first frame update
     void Start()
     {
+        SuperStart();
     }
 
     // Update is called once per frame
     void Update()
     {
+        SuperUpdate();
     }
 }

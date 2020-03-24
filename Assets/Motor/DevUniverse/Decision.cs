@@ -11,4 +11,9 @@ public class Decision
         this.newMindset = newMindset;
         this.choice = choice;
     }
+
+    public Decision DeepCopy()
+    {
+        return new Decision(pheromone != null ? pheromone.DeepCopy() : null, newMindset, choice != null ? choice.DeepCopy() : null);
+    }
 }

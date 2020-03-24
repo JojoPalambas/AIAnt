@@ -14,15 +14,18 @@ public abstract class Ant : MonoBehaviour
 {
     [Header("Gameplay")]
     public Vector2Int gameCoordinates;
-    private int hp;
-    private int energy;
-    private int carriedFood;
+    public AntMindset mindset;
+    public int hp;
+    public int energy;
+    public int carriedFood;
 
     [Header("Display")]
     public Vector2Int displayCoordinates;
     public HexDirection displayDirection;
 
-    //[Header("Animations")]
+    [Header("AI management")]
+    public Decision decision;
+    public PastTurnDigest pastTurn;
 
     public abstract AntType Type
     {
@@ -32,6 +35,7 @@ public abstract class Ant : MonoBehaviour
     // Start is called before the first frame update
     protected void SuperStart()
     {
+        pastTurn = null;
     }
 
     // Update is called once per frame

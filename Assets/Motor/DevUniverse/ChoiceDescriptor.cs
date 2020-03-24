@@ -14,6 +14,11 @@ public class ChoiceDescriptor
         this.word = word;
     }
 
+    public ChoiceDescriptor DeepCopy()
+    {
+        return new ChoiceDescriptor(type, direction, quantity, word);
+    }
+
     public static ChoiceDescriptor ChooseNone()
     {
         return new ChoiceDescriptor(ActionType.NONE, HexDirection.CENTER, 0, AntWord.NONE);

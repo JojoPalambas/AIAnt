@@ -9,4 +9,9 @@ public class PastTurnDigest
         this.pastDecision = pastDecision;
         this.error = error;
     }
+
+    public PastTurnDigest DeepCopy()
+    {
+        return new PastTurnDigest(pastDecision != null ? pastDecision.DeepCopy() : null, error);
+    }
 }

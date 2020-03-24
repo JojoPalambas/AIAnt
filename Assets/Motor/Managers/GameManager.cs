@@ -4,9 +4,10 @@ using UnityEngine;
 
 public enum GameStatus
 {
-    ROTATION,
-    ANIMATION,
-    THINKING
+    ROTATING,
+    ANIMATING,
+    THINKING,
+    ACTING
 }
 
 [System.Serializable]
@@ -154,7 +155,7 @@ public class GameManager : MonoBehaviour
         List<Team> winningTeams = null;
         switch (status)
         {
-            case GameStatus.ROTATION:
+            case GameStatus.ROTATING:
 
                 currentAnimationTime -= Time.deltaTime;
                 Rotate();
@@ -162,13 +163,13 @@ public class GameManager : MonoBehaviour
                 if (currentAnimationTime <= 0)
                 {
                     currentAnimationTime = animationTime;
-                    status = GameStatus.ANIMATION;
+                    status = GameStatus.ANIMATING;
                     break;
                 }
 
                 break;
 
-            case GameStatus.ANIMATION:
+            case GameStatus.ANIMATING:
 
                 currentAnimationTime -= Time.deltaTime;
                 Animate();
@@ -190,9 +191,16 @@ public class GameManager : MonoBehaviour
                     break;
 
                 Think();
+                
+                status = GameStatus.ACTING;
+                break;
+
+            case GameStatus.ACTING:
+
+                Act();
 
                 currentAnimationTime = rotationTime;
-                status = GameStatus.ROTATION;
+                status = GameStatus.ROTATING;
                 break;
 
             default:
@@ -216,6 +224,7 @@ public class GameManager : MonoBehaviour
             aisToCompete.Add(ai);
         }
     }
+
     private void FixAllAnimations()
     {
         foreach (Team team in teams)
@@ -238,19 +247,121 @@ public class GameManager : MonoBehaviour
     {
         foreach (Team team in teams)
         {
-            HexDirection randDirection = (HexDirection) Random.Range(1, 7);
+            team.queen.decision = team.ai.OnQueenTurn(new TurnInformation(
+                terrain[team.queen.gameCoordinates.x][team.queen.gameCoordinates.y].tile.Type,
+                team.queen.pastTurn != null ? team.queen.pastTurn.DeepCopy() : null,
+                team.queen.mindset,
+                null,
+                ValueConverter.Convert(team.queen.energy),
+                ValueConverter.Convert(team.queen.hp),
+                ValueConverter.Convert(team.queen.carriedFood),
+                null,
+                null,
+                team.queen.GetInstanceID()
+            ));
 
-            Vector2Int newCoord = CoordConverter.MoveHex(team.queen.gameCoordinates, randDirection);
+            Debug.Log(team.queen.decision.choice.type);
 
-            team.queen.displayDirection = randDirection;
-
-            if (!CheckWalkability(newCoord))
-                continue;
-
-            terrain[team.queen.gameCoordinates.x][team.queen.gameCoordinates.y].ant = null;
-            terrain[newCoord.x][newCoord.y].ant = team.queen;
-            team.queen.gameCoordinates = newCoord;
+            foreach (Worker worker in team.workers)
+            {
+                worker.decision = team.ai.OnQueenTurn(new TurnInformation(
+                   terrain[worker.gameCoordinates.x][worker.gameCoordinates.y].tile.Type,
+                   worker.pastTurn != null ? worker.pastTurn.DeepCopy() : null,
+                   worker.mindset,
+                   null,
+                   ValueConverter.Convert(worker.energy),
+                   ValueConverter.Convert(worker.hp),
+                   ValueConverter.Convert(worker.carriedFood),
+                   null,
+                   null,
+                   worker.GetInstanceID()
+               ));
+            }
         }
+    }
+
+    private void Act()
+    {
+        foreach (Team team in teams)
+        {
+            ResolveDecision(team.queen);
+
+            foreach (Worker worker in team.workers)
+            {
+                ResolveDecision(worker);
+            }
+        }
+    }
+
+    private void ResolveDecision(Ant ant)
+    {
+        TurnError error = TreatDecision(ant);
+        ant.pastTurn = new PastTurnDigest(ant.decision, error);
+    }
+
+    private TurnError TreatDecision(Ant ant)
+    {
+        Decision decision = ant.decision;
+
+        if (decision.choice == null)
+            return TurnError.ILLEGAL;
+
+        switch (decision.choice.type)
+        {
+            case ActionType.NONE:
+                return TurnError.NONE;
+
+            case ActionType.MOVE:
+                ActMove(ant, decision.choice.direction);
+                return TurnError.ILLEGAL;
+
+            case ActionType.ATTACK:
+                Debug.LogWarning("Not implemented yet");
+                return TurnError.ILLEGAL;
+
+            case ActionType.EAT:
+                Debug.LogWarning("Not implemented yet");
+                return TurnError.ILLEGAL;
+
+            case ActionType.STOCK:
+                Debug.LogWarning("Not implemented yet");
+                return TurnError.ILLEGAL;
+
+            case ActionType.GIVE:
+                Debug.LogWarning("Not implemented yet");
+                return TurnError.ILLEGAL;
+
+            case ActionType.ANALYSE:
+                Debug.LogWarning("Not implemented yet");
+                return TurnError.ILLEGAL;
+
+            case ActionType.COMMUNICATE:
+                Debug.LogWarning("Not implemented yet");
+                return TurnError.ILLEGAL;
+
+            case ActionType.EGG:
+                Debug.LogWarning("Not implemented yet");
+                return TurnError.ILLEGAL;
+
+            default:
+                Debug.LogWarning("Unknwo ActionType: " + decision.choice.type);
+                return TurnError.ILLEGAL;
+
+        }
+    }
+
+    private void ActMove(Ant ant, HexDirection direction)
+    {
+        Vector2Int newCoord = CoordConverter.MoveHex(ant.gameCoordinates, direction);
+
+        ant.displayDirection = direction;
+
+        if (!CheckWalkability(newCoord))
+            return; ;
+
+        terrain[ant.gameCoordinates.x][ant.gameCoordinates.y].ant = null;
+        terrain[newCoord.x][newCoord.y].ant = ant;
+        ant.gameCoordinates = newCoord;
     }
 
     private bool CheckCoordinatesValidity(Vector2Int coord)

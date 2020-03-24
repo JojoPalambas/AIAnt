@@ -18,4 +18,9 @@ public class PheromonePlacement
         this.output = output;
         this.placeIfError = placeIfError;
     }
+
+    public PheromonePlacement DeepCopy()
+    {
+        return new PheromonePlacement(type, intensity, input, output, placeIfError);
+    }
 }
