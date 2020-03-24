@@ -2,7 +2,7 @@
 public class PastTurnDigest
 {
     public readonly Decision pastDecision;
-    TurnError error;
+    public readonly TurnError error;
 
     public PastTurnDigest(Decision pastDecision, TurnError error)
     {

@@ -259,8 +259,7 @@ public class GameManager : MonoBehaviour
                 null,
                 team.queen.GetInstanceID()
             ));
-
-            Debug.Log(team.queen.decision.choice.type);
+            team.queen.displayDirection = team.queen.decision.choice.direction;
 
             foreach (Worker worker in team.workers)
             {
@@ -275,7 +274,8 @@ public class GameManager : MonoBehaviour
                    null,
                    null,
                    worker.GetInstanceID()
-               ));
+                ));
+                worker.displayDirection = worker.decision.choice.direction;
             }
         }
     }
@@ -312,8 +312,7 @@ public class GameManager : MonoBehaviour
                 return TurnError.NONE;
 
             case ActionType.MOVE:
-                ActMove(ant, decision.choice.direction);
-                return TurnError.ILLEGAL;
+                return ActMove(ant, decision.choice.direction);
 
             case ActionType.ATTACK:
                 Debug.LogWarning("Not implemented yet");
@@ -350,18 +349,19 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void ActMove(Ant ant, HexDirection direction)
+    private TurnError ActMove(Ant ant, HexDirection direction)
     {
         Vector2Int newCoord = CoordConverter.MoveHex(ant.gameCoordinates, direction);
 
-        ant.displayDirection = direction;
-
-        if (!CheckWalkability(newCoord))
-            return; ;
+        TurnError tileError = CheckWalkability(newCoord);
+        if (tileError != TurnError.NONE)
+            return tileError;
 
         terrain[ant.gameCoordinates.x][ant.gameCoordinates.y].ant = null;
         terrain[newCoord.x][newCoord.y].ant = ant;
         ant.gameCoordinates = newCoord;
+
+        return TurnError.NONE;
     }
 
     private bool CheckCoordinatesValidity(Vector2Int coord)
@@ -370,23 +370,25 @@ public class GameManager : MonoBehaviour
     }
 
     // Checks that a tile can be walked in
-    private bool CheckWalkability(Vector2Int coord)
+    private TurnError CheckWalkability(Vector2Int coord)
     {
         if (!CheckCoordinatesValidity(coord))
-            return false;
+            return TurnError.COLLISION_BOUNDS;
 
         TileContent tileContent = terrain[coord.x][coord.y];
         if (tileContent == null)
         {
             Debug.Log("Tile content does not exist at coordinates " + coord.ToString());
-            return false;
+            return TurnError.COLLISION_VOID;
         }
         if (tileContent.ant != null)
-            return false;
-        if (tileContent.tile == null || tileContent.tile.Type != TerrainType.GROUND)
-            return false;
+            return TurnError.COLLISION_ANT;
+        if (tileContent.tile == null)
+            return TurnError.COLLISION_VOID;
+        if (tileContent.tile.Type != TerrainType.GROUND)
+            return TurnError.COLLISION_WATER;
 
-        return true;
+        return TurnError.NONE;
     }
 
     private void Rotate()

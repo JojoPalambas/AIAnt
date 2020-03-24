@@ -55,6 +55,9 @@ public abstract class Ant : MonoBehaviour
         if (elapsedTime >= totalTime)
             return;
 
+        if (displayDirection == HexDirection.CENTER)
+            return;
+
         float elapsedPercentage = elapsedTime / totalTime;
 
         // FIXME Quite inelegant way to rotate slowly to face the next tile
