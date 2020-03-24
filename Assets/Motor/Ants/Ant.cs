@@ -36,6 +36,10 @@ public abstract class Ant : MonoBehaviour
     protected void SuperStart()
     {
         pastTurn = null;
+
+        hp = 100;
+        energy = 100;
+        carriedFood = 0;
     }
 
     // Update is called once per frame

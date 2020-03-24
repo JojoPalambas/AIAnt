@@ -13,6 +13,8 @@ public class Queen : Ant
     void Start()
     {
         SuperStart();
+
+        carriedFood = 100;
     }
 
     // Update is called once per frame
