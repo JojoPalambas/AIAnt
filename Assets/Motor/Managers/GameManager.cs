@@ -27,14 +27,17 @@ public class TileContent
 public class Team
 {
     public int teamId;
+    public AntAI ai;
+
     public Queen queen;
     public List<Worker> workers;
 
-    public Team(int teamId, Queen queen)
+    public Team(int teamId, Queen queen, AntAI ai)
     {
         this.teamId = teamId;
         this.queen = queen;
         this.workers = new List<Worker>();
+        this.ai = ai;
     }
 }
 
@@ -54,7 +57,7 @@ public class GameManager : MonoBehaviour
     [Header("Gameplay")]
     public Queen queenPrefab;
     public Worker workerPrefab;
-    public int numberOfTeams;
+    public List<AntAI> aisToCompete;
     private List<Team> teams;
 
     [Header("Animations")]
@@ -112,10 +115,11 @@ public class GameManager : MonoBehaviour
 
         // Instantiate the teams (number inferior or equal to 4)
         teams = new List<Team>();
-        for (int i = 0; i < numberOfTeams && i < 4; i++)
+        int index = 0;
+        foreach (AntAI ai in aisToCompete)
         {
             Vector2Int queenPosition = new Vector2Int();
-            switch (i)
+            switch (index)
             {
                 case 0:
                     queenPosition = new Vector2Int(0, 0);
@@ -138,8 +142,9 @@ public class GameManager : MonoBehaviour
             Queen newQueen = Instantiate(queenPrefab, queenWorldPosition, queenPrefab.transform.rotation);
             newQueen.Init(queenPosition);
 
-            teams.Add(new Team(i, newQueen));
+            teams.Add(new Team(index, newQueen, ai));
 
+            index++;
         }
     }
 
@@ -202,6 +207,15 @@ public class GameManager : MonoBehaviour
         }
     }
 
+
+    public void SetAIs(List<AntAI> ais)
+    {
+        aisToCompete = new List<AntAI>();
+        foreach (AntAI ai in ais)
+        {
+            aisToCompete.Add(ai);
+        }
+    }
     private void FixAllAnimations()
     {
         foreach (Team team in teams)
