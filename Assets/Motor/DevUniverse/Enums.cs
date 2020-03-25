@@ -47,8 +47,9 @@ public enum TurnError
     COLLISION_WATER,
     COLLISION_BOUNDS,
     COLLISION_VOID,
+    NOT_ENEMY, // If an ant tries to attack its ally
+    NO_TARGET, // If the target is missing (no ant when attack, no food when eat, etc.)
     NOT_QUEEN, // If a non-queen ant tries to EGG
-    NO_TARGET,
     ILLEGAL
 }
 

@@ -52,5 +52,5 @@ MonoBehaviour:
     type: 3}
   workerPrefab: {fileID: 7627389938182149295, guid: 3256855cb81bc974ebdee8c98c522280,
     type: 3}
-  animationTime: 0.25
-  rotationTime: 0.25
+  animationTime: 0
+  rotationTime: 0

@@ -328,8 +328,7 @@ public class GameManager : MonoBehaviour
                 return ActMove(ant, decision.choice.direction);
 
             case ActionType.ATTACK:
-                Debug.LogWarning("Not implemented yet");
-                return TurnError.ILLEGAL;
+                return ActAttack(ant, decision.choice.direction);
 
             case ActionType.EAT:
                 Debug.LogWarning("Not implemented yet");
@@ -372,6 +371,19 @@ public class GameManager : MonoBehaviour
         terrain[ant.gameCoordinates.x][ant.gameCoordinates.y].ant = null;
         terrain[newCoord.x][newCoord.y].ant = ant;
         ant.gameCoordinates = newCoord;
+
+        return TurnError.NONE;
+    }
+
+    private TurnError ActAttack(Ant ant, HexDirection direction)
+    {
+        Vector2Int newCoord = CoordConverter.MoveHex(ant.gameCoordinates, direction);
+
+        TurnError tileError = CheckAttackability(newCoord, ant);
+        if (tileError != TurnError.NONE)
+            return tileError;
+
+        Debug.Log("ATTACK");
 
         return TurnError.NONE;
     }
@@ -421,6 +433,27 @@ public class GameManager : MonoBehaviour
             return TurnError.COLLISION_VOID;
         if (tileContent.tile.Type != TerrainType.GROUND)
             return TurnError.COLLISION_WATER;
+
+        return TurnError.NONE;
+    }
+
+    // Checks that a tile can be walked in
+    private TurnError CheckAttackability(Vector2Int coord, Ant attacker)
+    {
+        if (!CheckCoordinatesValidity(coord))
+            return TurnError.COLLISION_BOUNDS;
+
+        TileContent tileContent = terrain[coord.x][coord.y];
+        if (tileContent == null)
+        {
+            Debug.Log("Tile content does not exist at coordinates " + coord.ToString());
+            return TurnError.COLLISION_VOID;
+        }
+
+        if (tileContent.ant == null)
+            return TurnError.NO_TARGET;
+        if (tileContent.ant.team.teamId == attacker.team.teamId)
+            return TurnError.NOT_ENEMY;
 
         return TurnError.NONE;
     }

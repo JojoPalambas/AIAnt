@@ -88,5 +88,6 @@ public abstract class Ant : MonoBehaviour
     {
         transform.position = CoordConverter.PlanToWorld(CoordConverter.HexToPos(gameCoordinates), transform.position.y);
         displayCoordinates = gameCoordinates;
+        transform.LookAt(CoordConverter.PlanToWorld(CoordConverter.HexToPos(CoordConverter.MoveHex(displayCoordinates, displayDirection)), transform.position.y));
     }
 }
