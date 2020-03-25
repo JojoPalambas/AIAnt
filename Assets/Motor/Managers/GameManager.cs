@@ -145,6 +145,8 @@ public class GameManager : MonoBehaviour
             Vector3 queenWorldPosition = CoordConverter.PlanToWorld(CoordConverter.HexToPos(queenPosition), queenPrefab.transform.position.y);
             Queen newQueen = Instantiate(queenPrefab, queenWorldPosition, queenPrefab.transform.rotation);
 
+            terrain[queenPosition.x][queenPosition.y].ant = newQueen;
+
             Team newTeam = new Team(index, newQueen, ai);
             teams.Add(newTeam);
 

@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class CameraManager : MonoBehaviour
 {
-    [Header("Controls")]
+    [Header("Control")]
     public Vector3 speeds;
+    public float minHeight;
 
     // Start is called before the first frame update
     void Start()
@@ -22,5 +23,6 @@ public class CameraManager : MonoBehaviour
         float rightMvmt = Input.GetAxis("MovementX") * speeds.x * Time.deltaTime;
         float upMvmt = Input.GetAxis("MovementY") * speeds.y * Time.deltaTime;
         transform.position += new Vector3(rightMvmt, upMvmt, forwardMvmt);
+        transform.position = new Vector3(transform.position.x, Mathf.Max(transform.position.y, minHeight), transform.position.z);
     }
 }

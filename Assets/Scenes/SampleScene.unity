@@ -308,6 +308,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speeds: {x: 10, y: 10, z: 10}
+  minHeight: 3
 --- !u!1 &1446555655
 GameObject:
   m_ObjectHideFlags: 0
