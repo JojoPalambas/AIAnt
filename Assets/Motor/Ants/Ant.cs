@@ -19,6 +19,7 @@ public abstract class Ant : MonoBehaviour
     public int hp;
     public int energy;
     public int carriedFood;
+    public bool shouldDie;
 
     [Header("Display")]
     public Vector2Int displayCoordinates;
@@ -89,5 +90,27 @@ public abstract class Ant : MonoBehaviour
         transform.position = CoordConverter.PlanToWorld(CoordConverter.HexToPos(gameCoordinates), transform.position.y);
         displayCoordinates = gameCoordinates;
         transform.LookAt(CoordConverter.PlanToWorld(CoordConverter.HexToPos(CoordConverter.MoveHex(displayCoordinates, displayDirection)), transform.position.y));
+    }
+
+    // Returns true if the ant dies when getting hurt
+    public bool Hurt(int dmg)
+    {
+        hp -= dmg;
+
+        Debug.Log("Remaining HP: " + hp.ToString());
+
+        if (hp <= 0)
+        {
+            shouldDie = true;
+            return true;
+        }
+        return false;
+    }
+
+    public abstract void Die();
+
+    public void SuperDie()
+    {
+        Destroy(gameObject);
     }
 }

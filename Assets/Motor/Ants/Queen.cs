@@ -14,12 +14,21 @@ public class Queen : Ant
     {
         SuperStart();
 
-        carriedFood = 100;
+        hp = Const.QUEEN_STARTING_HP;
+        energy = Const.QUEEN_STARTING_ENERGY;
+        carriedFood = Const.QUEEN_STARTING_FOOD;
     }
 
     // Update is called once per frame
     void Update()
     {
         SuperUpdate();
+    }
+
+    public override void Die()
+    {
+        Debug.Log("The queen has died!");
+
+        SuperDie();
     }
 }

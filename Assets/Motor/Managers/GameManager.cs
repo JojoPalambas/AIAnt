@@ -43,6 +43,19 @@ public class Team
         this.workers = new List<Worker>();
         this.newBorns = new List<Worker>();
     }
+
+    public void Die()
+    {
+        queen.Die();
+        foreach (Worker worker in workers)
+        {
+            worker.Die();
+        }
+        foreach (Worker newBorn in newBorns)
+        {
+            newBorn.Die();
+        }
+    }
 }
 
 public class GameManager : MonoBehaviour
@@ -289,20 +302,46 @@ public class GameManager : MonoBehaviour
 
     private void Act()
     {
+        // Makes all the teams play
         foreach (Team team in teams)
         {
+            // Makes the queen and all the workers resolve their actions
             ResolveDecision(team.queen);
-
             foreach (Worker worker in team.workers)
             {
                 ResolveDecision(worker);
             }
 
+            // Makes all the newborns adult ants
             foreach (Worker newBorn in team.newBorns)
             {
                 team.workers.Add(newBorn);
             }
             team.newBorns = new List<Worker>();
+        }
+        List<Team> finishedTeams = new List<Team>();
+        foreach (Team team in teams)
+        {
+            // Makes all the ands that shoudl die die
+            if (team.queen.shouldDie)
+                finishedTeams.Add(team);
+
+            List<Worker> toDie = new List<Worker>();
+            foreach (Worker worker in team.workers)
+            {
+                if (worker.shouldDie)
+                    toDie.Add(worker);
+            }
+            foreach (Worker worker in toDie)
+            {
+                team.workers.Remove(worker);
+                Destroy(worker.gameObject);
+            }
+        }
+        foreach (Team team in finishedTeams)
+        {
+            team.Die();
+            teams.Remove(team);
         }
     }
 
@@ -377,13 +416,17 @@ public class GameManager : MonoBehaviour
 
     private TurnError ActAttack(Ant ant, HexDirection direction)
     {
-        Vector2Int newCoord = CoordConverter.MoveHex(ant.gameCoordinates, direction);
+        Vector2Int target = CoordConverter.MoveHex(ant.gameCoordinates, direction);
 
-        TurnError tileError = CheckAttackability(newCoord, ant);
+        TurnError tileError = CheckAttackability(target, ant);
         if (tileError != TurnError.NONE)
             return tileError;
 
-        Debug.Log("ATTACK");
+        Ant victim = terrain[target.x][target.y].ant;
+        if (ant.Type == AntType.QUEEN)
+            victim.Hurt(Const.QUEEN_ATTACK_DMG);
+        else
+            victim.Hurt(Const.WORKER_ATTACK_DMG);
 
         return TurnError.NONE;
     }
