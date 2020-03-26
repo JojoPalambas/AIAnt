@@ -27,8 +27,6 @@ public class Worker : Ant
 
     public override void Die()
     {
-        this.team.workers.Remove(this);
-
         SuperDie();
     }
 }

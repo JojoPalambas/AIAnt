@@ -57,7 +57,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -3033667219593020291, guid: 02b8dff396cc42146a97fc6b5b0721ec, type: 3}
+  - {fileID: 2100000, guid: 95e16da18183c6c4f885bca44467ac33, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -123,4 +123,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameCoordinates: {x: 0, y: 0}
+  mindset: 0
+  hp: 0
+  energy: 0
+  carriedFood: 0
+  shouldDie: 0
+  displayCoordinates: {x: 0, y: 0}
   displayDirection: 0
+  colorRenderer: {fileID: 6280938822337187774}

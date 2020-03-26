@@ -6,14 +6,22 @@ public class AIJojoTest : AntAI
 {
     public override Decision OnQueenTurn(TurnInformation info)
     {
-        ChoiceDescriptor choice =  ChoiceDescriptor.ChooseEgg(HexDirection.LEFT);
+        ChoiceDescriptor choice = ChoiceDescriptor.ChooseNone();
+
+        // If there is no past turn, or if somehow the past turn does not contiain a decision or a choice, the ant moves to the left
+        if (info.pastTurn == null || info.pastTurn.pastDecision == null || info.pastTurn.pastDecision.choice == null)
+            choice = ChoiceDescriptor.ChooseEgg((HexDirection) Random.Range(1, 7));
+        else if (info.pastTurn.error != TurnError.NONE)
+            choice = ChoiceDescriptor.ChooseEgg(RotateDirection(info.pastTurn.pastDecision.choice.direction));
+        else
+            choice = ChoiceDescriptor.ChooseEgg(info.pastTurn.pastDecision.choice.direction);
 
         return new Decision(null, AntMindset.AMS0, choice);
     }
 
     public override Decision OnWorkerTurn(TurnInformation info)
     {
-        ChoiceDescriptor choice = null;
+        ChoiceDescriptor choice = ChoiceDescriptor.ChooseNone();
 
         // If there is no past turn, or if somehow the past turn does not contiain a decision or a choice, the ant moves to the left
         if (info.pastTurn == null || info.pastTurn.pastDecision == null || info.pastTurn.pastDecision.choice == null)

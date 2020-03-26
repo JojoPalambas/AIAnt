@@ -10,17 +10,21 @@ public class TornamentManager : MonoBehaviour
 
     private List<AntAI> ais;
 
+    [Header("Graphics")]
+    public List<Color> colors;
+
     // Start is called before the first frame update
     void Start()
     {
         ais = new List<AntAI>();
 
         // This is where the fighting AIs are set
-        ais.Add(new AIJojoNone());
+        ais.Add(new AIJojoTest());
         ais.Add(new AIJojoTest());
 
         gameManager = Instantiate(gameManagerPrefab, transform);
         gameManager.SetAIs(ais);
+        gameManager.teamColors = colors;
     }
 
     // Update is called once per frame

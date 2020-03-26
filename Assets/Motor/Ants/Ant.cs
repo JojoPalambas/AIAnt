@@ -29,6 +29,10 @@ public abstract class Ant : MonoBehaviour
     public Decision decision;
     public PastTurnDigest pastTurn;
 
+    [Header("Graphics")]
+    public Renderer colorRenderer;
+    [System.NonSerialized] public Color teamColor;
+
     public abstract AntType Type
     {
         get;
@@ -42,6 +46,8 @@ public abstract class Ant : MonoBehaviour
         hp = 100;
         energy = 100;
         carriedFood = 0;
+
+        colorRenderer.material.SetColor("_Color", teamColor);
     }
 
     // Update is called once per frame
@@ -49,11 +55,12 @@ public abstract class Ant : MonoBehaviour
     {
     }
 
-    public void Init(Team team, Vector2Int gameCoordinates)
+    public void Init(Team team, Vector2Int gameCoordinates, Color color)
     {
         this.team = team;
         this.gameCoordinates = gameCoordinates;
         this.displayCoordinates = gameCoordinates;
+        this.teamColor = color;
     }
 
     public void RotateToTarget(float elapsedTime, float totalTime)
@@ -97,8 +104,6 @@ public abstract class Ant : MonoBehaviour
     {
         hp -= dmg;
 
-        Debug.Log("Remaining HP: " + hp.ToString());
-
         if (hp <= 0)
         {
             shouldDie = true;
@@ -111,6 +116,7 @@ public abstract class Ant : MonoBehaviour
 
     public void SuperDie()
     {
+        Debug.Log("Destroy " + name);
         Destroy(gameObject);
     }
 }

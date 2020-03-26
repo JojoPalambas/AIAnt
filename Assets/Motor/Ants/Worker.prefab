@@ -57,7 +57,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -3033667219593020291, guid: 5a3cb203fd8769b479d352e684e75200, type: 3}
+  - {fileID: 2100000, guid: 95e16da18183c6c4f885bca44467ac33, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -127,5 +127,7 @@ MonoBehaviour:
   hp: 0
   energy: 0
   carriedFood: 0
+  shouldDie: 0
   displayCoordinates: {x: 0, y: 0}
   displayDirection: 0
+  colorRenderer: {fileID: 7366033018431074346}

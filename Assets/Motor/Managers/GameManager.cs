@@ -34,7 +34,9 @@ public class Team
     public List<Worker> workers;
     public List<Worker> newBorns; // FIXME Replace this by eggs
 
-    public Team(int teamId, Queen queen, AntAI ai)
+    public Color color;
+
+    public Team(int teamId, Queen queen, AntAI ai, Color color)
     {
         this.teamId = teamId;
         this.ai = ai;
@@ -42,10 +44,13 @@ public class Team
         this.queen = queen;
         this.workers = new List<Worker>();
         this.newBorns = new List<Worker>();
+
+        this.color = color;
     }
 
     public void Die()
     {
+        Debug.Log(workers.Count);
         queen.Die();
         foreach (Worker worker in workers)
         {
@@ -81,6 +86,8 @@ public class GameManager : MonoBehaviour
     public float animationTime;
     public float rotationTime;
     private float currentAnimationTime;
+    
+    [System.NonSerialized] public List<Color> teamColors;
 
 
     /*
@@ -160,10 +167,11 @@ public class GameManager : MonoBehaviour
 
             terrain[queenPosition.x][queenPosition.y].ant = newQueen;
 
-            Team newTeam = new Team(index, newQueen, ai);
+            Color teamColor = teamColors.Count > index ? teamColors[index] : new Color(255, 255, 255);
+            Team newTeam = new Team(index, newQueen, ai, teamColor);
             teams.Add(newTeam);
 
-            newQueen.Init(newTeam, queenPosition);
+            newQueen.Init(newTeam, queenPosition, teamColor);
 
             index++;
         }
@@ -445,7 +453,7 @@ public class GameManager : MonoBehaviour
 
         Vector3 newAntWorldPosition = CoordConverter.PlanToWorld(CoordConverter.HexToPos(eggCoord), workerPrefab.transform.position.y);
         Worker newWorker = Instantiate(workerPrefab, newAntWorldPosition, workerPrefab.transform.rotation);
-        newWorker.Init(ant.team, eggCoord);
+        newWorker.Init(ant.team, eggCoord, ant.team.color);
 
         ant.team.newBorns.Add(newWorker);
         terrain[eggCoord.x][eggCoord.y].ant = newWorker;
