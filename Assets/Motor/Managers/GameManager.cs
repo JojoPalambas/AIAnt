@@ -75,6 +75,7 @@ public class GameManager : MonoBehaviour
     public int terrainWidth;
     public int terrainHeight;
     private TileContent[][] terrain;
+    public float waterProbability;
 
     [Header("Gameplay")]
     public Queen queenPrefab;
@@ -130,8 +131,19 @@ public class GameManager : MonoBehaviour
             {
                 if (groundTilePrefab != null)
                 {
-                    Vector2 currentHexPosition = CoordConverter.HexToPos(new Vector2Int(i, terrainHeight - j - 1));
-                    Tile newTile = Instantiate(groundTilePrefab, new Vector3(currentHexPosition.x, groundTilePrefab.transform.position.y, currentHexPosition.y), groundTilePrefab.transform.rotation);
+                    Vector2 currentTilePosition = CoordConverter.HexToPos(new Vector2Int(i, j));
+
+                    float rand = Random.Range(0f, 1f);
+
+                    Tile newTile = null;
+                    if (rand < waterProbability)
+                    {
+                        Debug.Log("Put water at " + new Vector2Int(i, j).ToString());
+                        newTile = Instantiate(waterTilePrefab, CoordConverter.PlanToWorld(currentTilePosition, waterTilePrefab.transform.position.y), waterTilePrefab.transform.rotation);
+                    }
+                    else
+                        newTile = Instantiate(groundTilePrefab, CoordConverter.PlanToWorld(currentTilePosition, groundTilePrefab.transform.position.y), groundTilePrefab.transform.rotation);
+                    
                     terrain[i][j] = new TileContent(newTile, null);
                 }
             }
@@ -483,7 +495,10 @@ public class GameManager : MonoBehaviour
         if (tileContent.tile == null)
             return TurnError.COLLISION_VOID;
         if (tileContent.tile.Type != TerrainType.GROUND)
+        {
+            Debug.Log("Water at " + coord.ToString());
             return TurnError.COLLISION_WATER;
+        }
 
         return TurnError.NONE;
     }
