@@ -17,6 +17,8 @@ public class Queen : Ant
         hp = Const.QUEEN_STARTING_HP;
         energy = Const.QUEEN_STARTING_ENERGY;
         carriedFood = Const.QUEEN_STARTING_FOOD;
+
+        SuperStartLate();
     }
 
     // Update is called once per frame

@@ -14,7 +14,12 @@ public abstract class Const
 
     // Worker stats
     public static int WORKER_STARTING_HP = 100;
-    public static int WORKER_STARTING_ENERGY = 100;
+    public static int WORKER_STARTING_ENERGY = 25;
     public static int WORKER_STARTING_FOOD = 0;
     public static int WORKER_ATTACK_DMG = 25;
+
+    // Action costs
+    public static int MOVE_COST = 0;
+    public static int ATTACK_COST = 5;
+    public static int EGG_COST = 25;
 }

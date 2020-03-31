@@ -138,7 +138,6 @@ public class GameManager : MonoBehaviour
                     Tile newTile = null;
                     if (rand < waterProbability)
                     {
-                        Debug.Log("Put water at " + new Vector2Int(i, j).ToString());
                         newTile = Instantiate(waterTilePrefab, CoordConverter.PlanToWorld(currentTilePosition, waterTilePrefab.transform.position.y), waterTilePrefab.transform.rotation);
                     }
                     else
@@ -427,6 +426,11 @@ public class GameManager : MonoBehaviour
         if (tileError != TurnError.NONE)
             return tileError;
 
+        if (ant.CheckEnergy(Const.MOVE_COST))
+            ant.UpdateEnergy(-Const.MOVE_COST);
+        else
+            return TurnError.NO_ENERGY;
+
         terrain[ant.gameCoordinates.x][ant.gameCoordinates.y].ant = null;
         terrain[newCoord.x][newCoord.y].ant = ant;
         ant.gameCoordinates = newCoord;
@@ -441,6 +445,11 @@ public class GameManager : MonoBehaviour
         TurnError tileError = CheckAttackability(target, ant);
         if (tileError != TurnError.NONE)
             return tileError;
+
+        if (ant.CheckEnergy(Const.ATTACK_COST))
+            ant.UpdateEnergy(-Const.ATTACK_COST);
+        else
+            return TurnError.NO_ENERGY;
 
         Ant victim = terrain[target.x][target.y].ant;
         if (ant.Type == AntType.QUEEN)
@@ -461,7 +470,11 @@ public class GameManager : MonoBehaviour
         TurnError tileError = CheckWalkability(eggCoord);
         if (tileError != TurnError.NONE)
             return tileError;
-
+        
+        if (ant.CheckEnergy(Const.EGG_COST))
+            ant.UpdateEnergy(-Const.EGG_COST);
+        else
+            return TurnError.NO_ENERGY;
 
         Vector3 newAntWorldPosition = CoordConverter.PlanToWorld(CoordConverter.HexToPos(eggCoord), workerPrefab.transform.position.y);
         Worker newWorker = Instantiate(workerPrefab, newAntWorldPosition, workerPrefab.transform.rotation);
@@ -496,7 +509,6 @@ public class GameManager : MonoBehaviour
             return TurnError.COLLISION_VOID;
         if (tileContent.tile.Type != TerrainType.GROUND)
         {
-            Debug.Log("Water at " + coord.ToString());
             return TurnError.COLLISION_WATER;
         }
 

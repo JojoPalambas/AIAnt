@@ -46,7 +46,9 @@ public abstract class Ant : MonoBehaviour
         hp = 100;
         energy = 100;
         carriedFood = 0;
-
+    }
+    protected void SuperStartLate()
+    {
         colorRenderer.material.SetColor("_Color", teamColor);
         colorRenderer.material.SetFloat("_Hp", (float) hp / 100);
         colorRenderer.material.SetFloat("_Energy", (float) energy / 100);
@@ -55,8 +57,6 @@ public abstract class Ant : MonoBehaviour
     // Update is called once per frame
     protected void SuperUpdate()
     {
-        colorRenderer.material.SetFloat("_Hp", (float) hp / 100);
-        colorRenderer.material.SetFloat("_Energy", (float) energy / 100);
     }
 
     public void Init(Team team, Vector2Int gameCoordinates, Color color)
@@ -113,7 +113,36 @@ public abstract class Ant : MonoBehaviour
             shouldDie = true;
             return true;
         }
+        colorRenderer.material.SetFloat("_Hp", (float) hp / 100);
+
         return false;
+    }
+
+    // Updates the energy by the given value, and returns the excess (in either the positive way or the negative one)
+    public int UpdateEnergy(int variation)
+    {
+        energy += variation;
+
+        int ret = 0;
+        if (energy < 0)
+        {
+            ret = -energy;
+            energy = 0;
+        }
+        else if (energy > 100)
+        {
+            ret = energy - 100;
+            energy = 100;
+        }
+
+        colorRenderer.material.SetFloat("_Energy", (float) energy / 100);
+
+        return ret;
+    }
+
+    public bool CheckEnergy(int energy)
+    {
+        return this.energy >= energy;
     }
 
     public abstract void Die();

@@ -17,6 +17,8 @@ public class Worker : Ant
         hp = Const.WORKER_STARTING_HP;
         energy = Const.WORKER_STARTING_ENERGY;
         carriedFood = Const.WORKER_STARTING_FOOD;
+
+        SuperStartLate();
     }
 
     // Update is called once per frame

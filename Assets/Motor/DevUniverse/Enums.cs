@@ -41,12 +41,12 @@ public enum ActionType
 public enum TurnError
 {
     NONE,
-    COLLISION_WALL,
-    COLLISION_ANT,
-    COLLISION_FOOD,
-    COLLISION_WATER,
-    COLLISION_BOUNDS,
-    COLLISION_VOID,
+    NO_ENERGY, // If the ant does not have enough energy to perform the action
+    COLLISION_ANT, // If the action could not be done because the target contained an ant
+    COLLISION_FOOD, // If the action could not be done because the target contained food
+    COLLISION_WATER, // If the action could not be done because the target was a tile of water
+    COLLISION_BOUNDS, // If the action could not be done because the target was not in the bounds of the map
+    COLLISION_VOID, // If the action could not be done because the target did not contain a tile
     NOT_ENEMY, // If an ant tries to attack its ally
     NO_TARGET, // If the target is missing (no ant when attack, no food when eat, etc.)
     NOT_QUEEN, // If a non-queen ant tries to EGG
