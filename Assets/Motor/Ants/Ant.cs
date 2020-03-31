@@ -48,11 +48,15 @@ public abstract class Ant : MonoBehaviour
         carriedFood = 0;
 
         colorRenderer.material.SetColor("_Color", teamColor);
+        colorRenderer.material.SetFloat("_Hp", (float) hp / 100);
+        colorRenderer.material.SetFloat("_Energy", (float) energy / 100);
     }
 
     // Update is called once per frame
     protected void SuperUpdate()
     {
+        colorRenderer.material.SetFloat("_Hp", (float) hp / 100);
+        colorRenderer.material.SetFloat("_Energy", (float) energy / 100);
     }
 
     public void Init(Team team, Vector2Int gameCoordinates, Color color)
