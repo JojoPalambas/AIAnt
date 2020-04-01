@@ -15,13 +15,13 @@ public class TileContent
 {
     public Tile tile;
     public Ant ant;
-    // List<Pheromone> pheromones
-    // Food food
+    // public List<Pheromone> pheromones;
+    public Food food;
 
-    public TileContent(Tile tile, Ant ant)
+    public TileContent(Tile tile, Food food)
     {
         this.tile = tile;
-        this.ant = ant;
+        this.food = food;
     }
 }
 
@@ -68,14 +68,17 @@ public class GameManager : MonoBehaviour
     private GameStatus status = GameStatus.THINKING;
 
     [Header("Prefabs")]
-    public Tile groundTilePrefab;
-    public Tile waterTilePrefab;
 
     [Header("Terrain")]
     public int terrainWidth;
     public int terrainHeight;
+    public Tile groundTilePrefab;
+    public Tile waterTilePrefab;
+    public Food foodPrefab;
+    private List<Vector2Int> protectedTiles;
     private TileContent[][] terrain;
     public float waterProbability;
+    public float foodProbability;
 
     [Header("Gameplay")]
     public Queen queenPrefab;
@@ -119,8 +122,45 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         // If the map too small
-        if (terrainWidth < 2 || terrainHeight < 2)
+        if (terrainWidth < 4 || terrainHeight < 4)
             return;
+
+        // Creates the protected tiles
+        protectedTiles = new List<Vector2Int>();
+        int index = 0;
+
+        for (int i = 0; i < aisToCompete.Count; i++)
+        {
+            switch (i)
+            {
+                case 0:
+                    protectedTiles.Add(new Vector2Int(0, 0));
+                    protectedTiles.Add(new Vector2Int(1, 0));
+                    protectedTiles.Add(new Vector2Int(0, 1));
+                    protectedTiles.Add(new Vector2Int(1, 1));
+                    break;
+                case 1:
+                    protectedTiles.Add(new Vector2Int(terrainWidth - 1, terrainHeight - 1));
+                    protectedTiles.Add(new Vector2Int(terrainWidth - 2, terrainHeight - 1));
+                    protectedTiles.Add(new Vector2Int(terrainWidth - 1, terrainHeight - 2));
+                    protectedTiles.Add(new Vector2Int(terrainWidth - 2, terrainHeight - 2));
+                    break;
+                case 2:
+                    protectedTiles.Add(new Vector2Int(terrainWidth - 1, 0));
+                    protectedTiles.Add(new Vector2Int(terrainWidth - 2, 0));
+                    protectedTiles.Add(new Vector2Int(terrainWidth - 1, 1));
+                    protectedTiles.Add(new Vector2Int(terrainWidth - 2, 1));
+                    break;
+                case 3:
+                    protectedTiles.Add(new Vector2Int(0, terrainHeight - 1));
+                    protectedTiles.Add(new Vector2Int(1, terrainHeight - 1));
+                    protectedTiles.Add(new Vector2Int(0, terrainHeight - 2));
+                    protectedTiles.Add(new Vector2Int(1, terrainHeight - 2));
+                    break;
+                default:
+                    break;
+            }
+        }
 
         // Fills the terrain with tiles
         terrain = new TileContent[terrainWidth][];
@@ -135,22 +175,29 @@ public class GameManager : MonoBehaviour
 
                     float rand = Random.Range(0f, 1f);
 
+                    // Water is placed if the random number picked it AND the tile is not protected
                     Tile newTile = null;
-                    if (rand < waterProbability)
+                    if (!protectedTiles.Contains(new Vector2Int(i, j)) && rand < waterProbability)
                     {
                         newTile = Instantiate(waterTilePrefab, CoordConverter.PlanToWorld(currentTilePosition, waterTilePrefab.transform.position.y), waterTilePrefab.transform.rotation);
                     }
                     else
                         newTile = Instantiate(groundTilePrefab, CoordConverter.PlanToWorld(currentTilePosition, groundTilePrefab.transform.position.y), groundTilePrefab.transform.rotation);
-                    
-                    terrain[i][j] = new TileContent(newTile, null);
+
+                    rand = Random.Range(0f, 1f);
+                    Food newFood = null;
+                    // Food is placed if the random number picked it AND the tile is not protected
+                    if (!protectedTiles.Contains(new Vector2Int(i, j)) && rand < foodProbability)
+                        newFood = Instantiate(foodPrefab, CoordConverter.PlanToWorld(currentTilePosition, foodPrefab.transform.position.y), foodPrefab.transform.rotation);
+
+                    terrain[i][j] = new TileContent(newTile, newFood);
                 }
             }
         }
 
         // Instantiate the teams (number inferior or equal to 4)
         teams = new List<Team>();
-        int index = 0;
+        index = 0;
         foreach (AntAI ai in aisToCompete)
         {
             Vector2Int queenPosition = new Vector2Int();
@@ -253,7 +300,6 @@ public class GameManager : MonoBehaviour
             // Announce victory / tie
         }
     }
-
 
     public void SetAIs(List<AntAI> ais)
     {
@@ -389,8 +435,7 @@ public class GameManager : MonoBehaviour
                 return ActAttack(ant, decision.choice.direction);
 
             case ActionType.EAT:
-                Debug.LogWarning("Not implemented yet");
-                return TurnError.ILLEGAL;
+                return ActEat(ant, decision.choice.direction, decision.choice.quantity);
 
             case ActionType.STOCK:
                 Debug.LogWarning("Not implemented yet");
@@ -460,6 +505,31 @@ public class GameManager : MonoBehaviour
         return TurnError.NONE;
     }
 
+    private TurnError ActEat(Ant ant, HexDirection direction, int quantity)
+    {
+        if (direction == HexDirection.CENTER)
+        {
+            return TurnError.NONE;
+        }
+        else
+        {
+            Vector2Int target = CoordConverter.MoveHex(ant.gameCoordinates, direction);
+
+            TurnError tileError = CheckEdibility(target);
+            if (tileError != TurnError.NONE)
+                return tileError;
+
+            Food victim = terrain[target.x][target.y].food;
+            int quantityToEat = Mathf.Min(quantity, Const.MAX_FOOD_BY_TURN);
+            quantityToEat = victim.GetFood(quantityToEat);
+
+            // The ant can eat more than it can store, so that it can remove food from the terrain if needed
+            ant.UpdateEnergy(quantityToEat);
+
+            return TurnError.NONE;
+        }
+    }
+
     private TurnError ActEgg(Ant ant, HexDirection direction)
     {
         if (ant.Type != AntType.QUEEN)
@@ -505,6 +575,8 @@ public class GameManager : MonoBehaviour
         }
         if (tileContent.ant != null)
             return TurnError.COLLISION_ANT;
+        if (tileContent.food != null)
+            return TurnError.COLLISION_FOOD;
         if (tileContent.tile == null)
             return TurnError.COLLISION_VOID;
         if (tileContent.tile.Type != TerrainType.GROUND)
@@ -532,6 +604,31 @@ public class GameManager : MonoBehaviour
             return TurnError.NO_TARGET;
         if (tileContent.ant.team.teamId == attacker.team.teamId)
             return TurnError.NOT_ENEMY;
+
+        return TurnError.NONE;
+    }
+
+    // Checks that a tile can be eaten from
+    private TurnError CheckEdibility(Vector2Int coord)
+    {
+        if (!CheckCoordinatesValidity(coord))
+            return TurnError.COLLISION_BOUNDS;
+
+        TileContent tileContent = terrain[coord.x][coord.y];
+        if (tileContent == null)
+        {
+            Debug.Log("Tile content does not exist at coordinates " + coord.ToString());
+            return TurnError.COLLISION_VOID;
+        }
+
+        if (tileContent.food == null)
+            return TurnError.NO_TARGET;
+        // Should never be triggred, but gives another security
+        if (tileContent.food.value <= 0)
+        {
+            tileContent.food.Die();
+            return TurnError.NO_TARGET;
+        }
 
         return TurnError.NONE;
     }

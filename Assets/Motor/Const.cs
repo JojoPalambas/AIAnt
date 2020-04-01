@@ -22,4 +22,7 @@ public abstract class Const
     public static int MOVE_COST = 0;
     public static int ATTACK_COST = 5;
     public static int EGG_COST = 25;
+
+    // Others
+    public static int MAX_FOOD_BY_TURN = 25;
 }
