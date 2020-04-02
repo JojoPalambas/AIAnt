@@ -18,8 +18,32 @@ public class Food : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+    }
+
+    public void ScaleToTarget(float elapsedTime, float totalTime)
+    {
+        // The remaining time might be 0 (especially if the animation time by turn is set to 0)
+        if (elapsedTime >= totalTime)
+            return;
+
+        float elapsedPercentage = elapsedTime / totalTime;
+
+
         float displaySize = (float) value / 100;
-        displayObject.transform.localScale = new Vector3(displaySize, displaySize, displaySize);
+        Vector3 targetScale = new Vector3(displaySize, displaySize, displaySize);
+
+        displayObject.transform.localScale = Vector3.Slerp(displayObject.transform.localScale, targetScale, elapsedPercentage);
+    }
+
+    public void FixAnimation()
+    {
+        if (value <= 0)
+            Die();
+        else
+        {
+            float displaySize = (float) Mathf.Max(value, 0) / 100;
+            displayObject.transform.localScale = new Vector3(displaySize, displaySize, displaySize);
+        }
     }
 
     public int GetFood(int quantity)
@@ -35,8 +59,7 @@ public class Food : MonoBehaviour
         {
             int ret = quantity - value;
             value = 0;
-
-            Die();
+            
             return ret;
         }
 

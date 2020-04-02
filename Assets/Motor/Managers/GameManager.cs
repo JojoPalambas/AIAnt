@@ -77,6 +77,7 @@ public class GameManager : MonoBehaviour
     public Food foodPrefab;
     private List<Vector2Int> protectedTiles;
     private TileContent[][] terrain;
+    private List<Food> foods;
     public float waterProbability;
     public float foodProbability;
 
@@ -164,6 +165,7 @@ public class GameManager : MonoBehaviour
 
         // Fills the terrain with tiles
         terrain = new TileContent[terrainWidth][];
+        foods = new List<Food>();
         for (int i = 0; i < terrainWidth; i++)
         {
             terrain[i] = new TileContent[terrainHeight];
@@ -188,7 +190,10 @@ public class GameManager : MonoBehaviour
                     Food newFood = null;
                     // Food is placed if the random number picked it AND the tile is not protected
                     if (!protectedTiles.Contains(new Vector2Int(i, j)) && rand < foodProbability)
+                    {
                         newFood = Instantiate(foodPrefab, CoordConverter.PlanToWorld(currentTilePosition, foodPrefab.transform.position.y), foodPrefab.transform.rotation);
+                        foods.Add(newFood);
+                    }
 
                     terrain[i][j] = new TileContent(newTile, newFood);
                 }
@@ -310,6 +315,40 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void Rotate()
+    {
+        foreach (Team team in teams)
+        {
+            team.queen.RotateToTarget(rotationTime - currentAnimationTime, rotationTime);
+
+            foreach (Worker worker in team.workers)
+            {
+                worker.RotateToTarget(rotationTime - currentAnimationTime, rotationTime);
+            }
+        }
+    }
+
+    private void Animate()
+    {
+        foreach (Team team in teams)
+        {
+            team.queen.MoveToTarget(animationTime - currentAnimationTime, animationTime);
+
+            foreach (Worker worker in team.workers)
+            {
+                worker.MoveToTarget(animationTime - currentAnimationTime, animationTime);
+            }
+        }
+
+        foreach (Food food in foods)
+        {
+            if (food == null)
+                continue;
+
+            food.ScaleToTarget(animationTime - currentAnimationTime, animationTime);
+        }
+    }
+
     private void FixAllAnimations()
     {
         foreach (Team team in teams)
@@ -321,6 +360,15 @@ public class GameManager : MonoBehaviour
                 worker.FixAnimation();
             }
         }
+
+        foreach (Food food in foods)
+        {
+            if (food == null)
+                continue;
+
+            food.FixAnimation();
+        }
+        foods.RemoveAll(food => food == null);
     }
 
     private List<Team> CheckForWin()
@@ -631,31 +679,5 @@ public class GameManager : MonoBehaviour
         }
 
         return TurnError.NONE;
-    }
-
-    private void Rotate()
-    {
-        foreach (Team team in teams)
-        {
-            team.queen.RotateToTarget(rotationTime - currentAnimationTime, rotationTime);
-
-            foreach (Worker worker in team.workers)
-            {
-                worker.RotateToTarget(rotationTime - currentAnimationTime, rotationTime);
-            }
-        }
-    }
-
-    private void Animate()
-    {
-        foreach (Team team in teams)
-        {
-            team.queen.MoveToTarget(animationTime - currentAnimationTime, animationTime);
-
-            foreach (Worker worker in team.workers)
-            {
-                worker.MoveToTarget(animationTime - currentAnimationTime, animationTime);
-            }
-        }
     }
 }
