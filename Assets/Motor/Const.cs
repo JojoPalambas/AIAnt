@@ -25,4 +25,5 @@ public abstract class Const
 
     // Others
     public static int MAX_FOOD_BY_TURN = 25;
+    public static int MAX_GIFT_BY_TURN = 50;
 }

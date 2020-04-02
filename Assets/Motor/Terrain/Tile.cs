@@ -8,9 +8,16 @@ public class Tile : MonoBehaviour
     [SerializeField]
     private TerrainType type;
 
+    public Renderer colorRenderer;
+
     public TerrainType Type
     {
         get { return type; }
         set { return; }
+    }
+
+    private void Start()
+    {
+        colorRenderer.material.SetFloat("_Offset", Random.Range(1f, 100f));
     }
 }

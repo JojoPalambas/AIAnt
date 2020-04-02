@@ -46,6 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   value: 100
   displayObject: {fileID: 7103276277436849087}
+  colorRenderer: {fileID: 2880352534527807874}
 --- !u!1 &6530993128832822551
 GameObject:
   m_ObjectHideFlags: 0

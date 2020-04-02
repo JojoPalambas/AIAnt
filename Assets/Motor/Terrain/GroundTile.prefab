@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   type: 1
+  colorRenderer: {fileID: 667590820221142901}
 --- !u!1 &8365555790280539104
 GameObject:
   m_ObjectHideFlags: 0

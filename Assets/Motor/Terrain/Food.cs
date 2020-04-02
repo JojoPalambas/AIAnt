@@ -7,12 +7,15 @@ public class Food : MonoBehaviour
     [Header("Gameplay")]
     public int value;
     public GameObject displayObject;
+    public Renderer colorRenderer;
 
     // Start is called before the first frame update
     void Start()
     {
         float displaySize = (float) value / 100;
         displayObject.transform.localScale = new Vector3(displaySize, displaySize, displaySize);
+
+        colorRenderer.material.SetFloat("_Offset", Random.Range(1f, 100f));
     }
 
     // Update is called once per frame
