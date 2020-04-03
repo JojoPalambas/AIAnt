@@ -21,9 +21,11 @@ public abstract class Const
     // Action costs
     public static int MOVE_COST = 0;
     public static int ATTACK_COST = 5;
+    public static int GIVE_COST = 5;
     public static int EGG_COST = 25;
 
     // Others
     public static int MAX_FOOD_BY_TURN = 25;
+    public static int MAX_STOCK_BY_TURN = 50;
     public static int MAX_GIFT_BY_TURN = 50;
 }

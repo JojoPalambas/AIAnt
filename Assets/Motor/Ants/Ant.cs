@@ -140,9 +140,36 @@ public abstract class Ant : MonoBehaviour
         return ret;
     }
 
+    // Updates the energy by the given value, and returns the excess (in either the positive way or the negative one)
+    public int UpdateStock(int variation)
+    {
+        carriedFood += variation;
+
+        int ret = 0;
+        if (carriedFood < 0)
+        {
+            ret = -carriedFood;
+            carriedFood = 0;
+        }
+        else if (carriedFood > 100)
+        {
+            ret = carriedFood - 100;
+            carriedFood = 100;
+        }
+
+        colorRenderer.material.SetFloat("_Food", (float) carriedFood / 100);
+
+        return ret;
+    }
+
     public bool CheckEnergy(int energy)
     {
         return this.energy >= energy;
+    }
+
+    public bool CheckStock(int stock)
+    {
+        return carriedFood >= stock;
     }
 
     public abstract void Die();

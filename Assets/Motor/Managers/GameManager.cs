@@ -50,7 +50,6 @@ public class Team
 
     public void Die()
     {
-        Debug.Log(workers.Count);
         queen.Die();
         foreach (Worker worker in workers)
         {
@@ -179,20 +178,22 @@ public class GameManager : MonoBehaviour
 
                     // Water is placed if the random number picked it AND the tile is not protected
                     Tile newTile = null;
+                    Food newFood = null;
                     if (!protectedTiles.Contains(new Vector2Int(i, j)) && rand < waterProbability)
                     {
                         newTile = Instantiate(waterTilePrefab, CoordConverter.PlanToWorld(currentTilePosition, waterTilePrefab.transform.position.y), waterTilePrefab.transform.rotation);
                     }
                     else
+                    {
                         newTile = Instantiate(groundTilePrefab, CoordConverter.PlanToWorld(currentTilePosition, groundTilePrefab.transform.position.y), groundTilePrefab.transform.rotation);
 
-                    rand = Random.Range(0f, 1f);
-                    Food newFood = null;
-                    // Food is placed if the random number picked it AND the tile is not protected
-                    if (!protectedTiles.Contains(new Vector2Int(i, j)) && rand < foodProbability)
-                    {
-                        newFood = Instantiate(foodPrefab, CoordConverter.PlanToWorld(currentTilePosition, foodPrefab.transform.position.y), foodPrefab.transform.rotation);
-                        foods.Add(newFood);
+                        rand = Random.Range(0f, 1f);
+                        // Food is placed if the random number picked it AND the tile is not protected (AND the tile is not water)
+                        if (!protectedTiles.Contains(new Vector2Int(i, j)) && rand < foodProbability)
+                        {
+                            newFood = Instantiate(foodPrefab, CoordConverter.PlanToWorld(currentTilePosition, foodPrefab.transform.position.y), foodPrefab.transform.rotation);
+                            foods.Add(newFood);
+                        }
                     }
 
                     terrain[i][j] = new TileContent(newTile, newFood);
@@ -486,12 +487,10 @@ public class GameManager : MonoBehaviour
                 return ActEat(ant, decision.choice.direction, decision.choice.quantity);
 
             case ActionType.STOCK:
-                Debug.LogWarning("Not implemented yet");
-                return TurnError.ILLEGAL;
+                return ActStock(ant, decision.choice.direction, decision.choice.quantity);
 
             case ActionType.GIVE:
-                Debug.LogWarning("Not implemented yet");
-                return TurnError.ILLEGAL;
+                return ActGive(ant, decision.choice.direction, decision.choice.quantity);
 
             case ActionType.ANALYSE:
                 Debug.LogWarning("Not implemented yet");
@@ -559,23 +558,69 @@ public class GameManager : MonoBehaviour
         {
             return TurnError.NONE;
         }
-        else
+        Vector2Int target = CoordConverter.MoveHex(ant.gameCoordinates, direction);
+
+        TurnError tileError = CheckEdibility(target);
+        if (tileError != TurnError.NONE)
+            return tileError;
+
+        Food victim = terrain[target.x][target.y].food;
+        int quantityToEat = Mathf.Min(quantity, Const.MAX_FOOD_BY_TURN);
+        quantityToEat = victim.GetFood(quantityToEat);
+
+        // The ant can eat more than it can store, so that it can remove food from the terrain if needed
+        ant.UpdateEnergy(quantityToEat);
+
+        return TurnError.NONE;
+    }
+
+    private TurnError ActStock(Ant ant, HexDirection direction, int quantity)
+    {
+        if (direction == HexDirection.CENTER)
         {
-            Vector2Int target = CoordConverter.MoveHex(ant.gameCoordinates, direction);
-
-            TurnError tileError = CheckEdibility(target);
-            if (tileError != TurnError.NONE)
-                return tileError;
-
-            Food victim = terrain[target.x][target.y].food;
-            int quantityToEat = Mathf.Min(quantity, Const.MAX_FOOD_BY_TURN);
-            quantityToEat = victim.GetFood(quantityToEat);
-
-            // The ant can eat more than it can store, so that it can remove food from the terrain if needed
-            ant.UpdateEnergy(quantityToEat);
-
-            return TurnError.NONE;
+            return TurnError.ILLEGAL;
         }
+        Vector2Int target = CoordConverter.MoveHex(ant.gameCoordinates, direction);
+
+        TurnError tileError = CheckEdibility(target);
+        if (tileError != TurnError.NONE)
+            return tileError;
+
+        Food victim = terrain[target.x][target.y].food;
+        int quantityToStock = Mathf.Min(quantity, Const.MAX_STOCK_BY_TURN);
+        quantityToStock = victim.GetFood(quantityToStock);
+
+        // The ant can eat more than it can store, so that it can remove food from the terrain if needed
+        ant.UpdateStock(quantityToStock);
+
+        return TurnError.NONE;
+    }
+
+    private TurnError ActGive(Ant ant, HexDirection direction, int quantity)
+    {
+        Vector2Int target = CoordConverter.MoveHex(ant.gameCoordinates, direction);
+
+        TurnError tileError = CheckGivability(target, ant);
+        if (tileError != TurnError.NONE)
+            return tileError;
+
+        if (ant.CheckEnergy(Const.GIVE_COST))
+            ant.UpdateEnergy(-Const.GIVE_COST);
+        else
+            return TurnError.NO_ENERGY;
+
+        Ant beneficiary = terrain[target.x][target.y].ant;
+        Logger.Info("Beneficiary: " + beneficiary.Type);
+
+        // Calculates how much to give
+        int quantityToGive = Mathf.Min(new int[] { quantity, Const.MAX_GIFT_BY_TURN, ant.carriedFood });
+        quantityToGive -= ant.UpdateStock(-quantityToGive);
+
+        // Give the energy to the beneficiary, then gives back the excess to the giver
+        int quantityToGiveBack = quantityToGive - beneficiary.UpdateEnergy(quantityToGive);
+        ant.UpdateStock(quantityToGiveBack);
+
+        return TurnError.NONE;
     }
 
     private TurnError ActEgg(Ant ant, HexDirection direction)
@@ -652,6 +697,27 @@ public class GameManager : MonoBehaviour
             return TurnError.NO_TARGET;
         if (tileContent.ant.team.teamId == attacker.team.teamId)
             return TurnError.NOT_ENEMY;
+
+        return TurnError.NONE;
+    }
+
+    // Checks that a tile can be walked in
+    private TurnError CheckGivability(Vector2Int coord, Ant giver)
+    {
+        if (!CheckCoordinatesValidity(coord))
+            return TurnError.COLLISION_BOUNDS;
+
+        TileContent tileContent = terrain[coord.x][coord.y];
+        if (tileContent == null)
+        {
+            Debug.Log("Tile content does not exist at coordinates " + coord.ToString());
+            return TurnError.COLLISION_VOID;
+        }
+
+        if (tileContent.ant == null)
+            return TurnError.NO_TARGET;
+        if (tileContent.ant.team.teamId != giver.team.teamId)
+            return TurnError.NOT_ALLY;
 
         return TurnError.NONE;
     }

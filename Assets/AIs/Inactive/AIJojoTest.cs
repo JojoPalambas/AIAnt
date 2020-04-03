@@ -38,10 +38,10 @@ public class AIJojoTest : AntAI
                         choice = ChoiceDescriptor.ChooseMove(info.pastTurn.pastDecision.choice.direction);
                     // If the movement failed because of an ant, the ant attacks it (yes, even if it is an ally)
                     else if (info.pastTurn.error == TurnError.COLLISION_ANT)
-                        choice = ChoiceDescriptor.ChooseAttack(info.pastTurn.pastDecision.choice.direction);
+                        choice = ChoiceDescriptor.ChooseGive(info.pastTurn.pastDecision.choice.direction, 100);
                     // If the movement failed because of food, the ant eats it
                     else if (info.pastTurn.error == TurnError.COLLISION_FOOD)
-                        choice = ChoiceDescriptor.ChooseEat(info.pastTurn.pastDecision.choice.direction, 100);
+                        choice = ChoiceDescriptor.ChooseStock(info.pastTurn.pastDecision.choice.direction, 100);
                     // If the movement failed for any other reason, the ant turns right
                     else
                         choice = ChoiceDescriptor.ChooseMove(RotateDirection(info.pastTurn.pastDecision.choice.direction));
@@ -61,15 +61,29 @@ public class AIJojoTest : AntAI
                     break;
 
                 // If the action was to eat, the ant keeps eating
-                case ActionType.EAT:
-                    // If the eating succeeded, the ant eats
+                case ActionType.STOCK:
+                    // If the stocking succeeded, the ant stocks
                     if (info.pastTurn.error == TurnError.NONE)
-                        choice = ChoiceDescriptor.ChooseEat(info.pastTurn.pastDecision.choice.direction, 100);
-                    // If the eating failed, the ant continues moving
+                        choice = ChoiceDescriptor.ChooseStock(info.pastTurn.pastDecision.choice.direction, 100);
+                    // If the stocking failed, the ant continues moving
                     else
                         choice = ChoiceDescriptor.ChooseMove(info.pastTurn.pastDecision.choice.direction);
                     break;
-        
+
+                // If the action was to give, the ant keeps giving
+                case ActionType.GIVE:
+
+                    if (info.pastTurn.error == TurnError.NONE)
+                        choice = ChoiceDescriptor.ChooseGive(info.pastTurn.pastDecision.choice.direction, 100);
+
+                    if (info.pastTurn.error == TurnError.NOT_ALLY)
+                        choice = ChoiceDescriptor.ChooseAttack(RotateDirection(info.pastTurn.pastDecision.choice.direction));
+
+                    else
+                        choice = ChoiceDescriptor.ChooseMove(RotateDirection(info.pastTurn.pastDecision.choice.direction));
+
+                    break;
+
                 // In any other case, the and moves left
                 default:
                     choice = ChoiceDescriptor.ChooseMove(HexDirection.LEFT);

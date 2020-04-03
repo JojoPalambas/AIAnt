@@ -20,6 +20,11 @@ public class ProgramManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
+    }
+
+    private void OnApplicationQuit()
+    {
+        Logger.Flush();
     }
 }
