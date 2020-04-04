@@ -29,18 +29,18 @@ public class EventInputBump : EventInput
 
 public class EventInputAttack : EventInput
 {
-    public EventInputAttack(HexDirection direction) : base(EventInputType.BUMP, direction) { }
+    public EventInputAttack(HexDirection direction) : base(EventInputType.ATTACK, direction) { }
 }
 
 public class EventInputAnalyse : EventInput
 {
-    public EventInputAnalyse(HexDirection direction) : base(EventInputType.BUMP, direction) { }
+    public EventInputAnalyse(HexDirection direction) : base(EventInputType.ANALYSE, direction) { }
 }
 
 public class EventInputComunicate : EventInput
 {
     public readonly CommunicateReport payload;
-    public EventInputComunicate(HexDirection direction, CommunicateReport payload) : base(EventInputType.BUMP, direction)
+    public EventInputComunicate(HexDirection direction, CommunicateReport payload) : base(EventInputType.COMMUNICATE, direction)
     {
         this.payload = payload;
     }

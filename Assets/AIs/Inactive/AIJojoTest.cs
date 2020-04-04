@@ -9,7 +9,7 @@ public class AIJojoTest : AntAI
         if (info.eventInputs == null)
             Logger.Info(info.id.ToString() + " - null");
         else
-            Logger.Info(info.id.ToString() + " - " + info.eventInputs.Count);
+            Logger.Info(info.id.ToString() + " - " + info.eventInputs.Count + (info.eventInputs.Count > 0 ? ": " + info.eventInputs[0].type + " at " + info.eventInputs[0].direction : ""));
 
         ChoiceDescriptor choice = ChoiceDescriptor.ChooseNone();
 
@@ -29,7 +29,7 @@ public class AIJojoTest : AntAI
         if (info.eventInputs == null)
             Logger.Info(info.id.ToString() + " - null");
         else
-            Logger.Info(info.id.ToString() + " - " + info.eventInputs.Count);
+            Logger.Info(info.id.ToString() + " - " + info.eventInputs.Count + (info.eventInputs.Count > 0 ? ": " + info.eventInputs[0].type + " at " + info.eventInputs[0].direction : ""));
 
         ChoiceDescriptor choice = ChoiceDescriptor.ChooseNone();
 

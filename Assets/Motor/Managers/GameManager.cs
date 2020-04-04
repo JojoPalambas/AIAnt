@@ -529,7 +529,14 @@ public class GameManager : MonoBehaviour
 
         TurnError tileError = CheckWalkability(newCoord);
         if (tileError != TurnError.NONE)
+        {
+            if (tileError == TurnError.COLLISION_ANT)
+            {
+                terrain[newCoord.x][newCoord.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
+                Logger.Info(ant.GetInstanceID().ToString() + " bumps (mvt) into " + terrain[newCoord.x][newCoord.y].ant.GetInstanceID().ToString() + " at position " + direction);
+            }
             return tileError;
+        }
 
         if (ant.CheckEnergy(Const.MOVE_COST))
             ant.UpdateEnergy(-Const.MOVE_COST);
@@ -552,7 +559,14 @@ public class GameManager : MonoBehaviour
 
         TurnError tileError = CheckAttackability(target, ant);
         if (tileError != TurnError.NONE)
+        {
+            if (tileError == TurnError.NOT_ENEMY)
+            {
+                terrain[target.x][target.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
+                Logger.Info(ant.GetInstanceID().ToString() + " bumps (atk) into " + terrain[target.x][target.y].ant.GetInstanceID().ToString() + " at position " + direction);
+            }
             return tileError;
+        }
 
         if (ant.CheckEnergy(Const.ATTACK_COST))
             ant.UpdateEnergy(-Const.ATTACK_COST);
@@ -566,7 +580,7 @@ public class GameManager : MonoBehaviour
             victim.Hurt(Const.WORKER_ATTACK_DMG);
 
         victim.eventInputs.Add(new EventInputAttack(CoordConverter.InvertDirection(direction)));
-        Logger.Info(ant.GetInstanceID().ToString() + " attacks " + victim.GetInstanceID().ToString());
+        Logger.Info(ant.GetInstanceID().ToString() + " attacks " + victim.GetInstanceID().ToString() + " at position " + direction);
 
         return TurnError.NONE;
     }
@@ -580,7 +594,14 @@ public class GameManager : MonoBehaviour
 
         TurnError tileError = CheckEdibility(target);
         if (tileError != TurnError.NONE)
+        {
+            if (tileError == TurnError.COLLISION_ANT)
+            {
+                terrain[target.x][target.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
+                Logger.Info(ant.GetInstanceID().ToString() + " bumps (eat) into " + terrain[target.x][target.y].ant.GetInstanceID().ToString() + " at position " + direction);
+            }
             return tileError;
+        }
 
         Food victim = terrain[target.x][target.y].food;
         int quantityToEat = Mathf.Min(quantity, Const.MAX_FOOD_BY_TURN);
@@ -601,7 +622,14 @@ public class GameManager : MonoBehaviour
 
         TurnError tileError = CheckEdibility(target);
         if (tileError != TurnError.NONE)
+        {
+            if (tileError == TurnError.COLLISION_ANT)
+            {
+                terrain[target.x][target.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
+                Logger.Info(ant.GetInstanceID().ToString() + " bumps (stk) into " + terrain[target.x][target.y].ant.GetInstanceID().ToString() + " at position " + direction);
+            }
             return tileError;
+        }
 
         Food victim = terrain[target.x][target.y].food;
         int quantityToStock = Mathf.Min(quantity, Const.MAX_STOCK_BY_TURN);
@@ -622,7 +650,14 @@ public class GameManager : MonoBehaviour
 
         TurnError tileError = CheckGivability(target, ant);
         if (tileError != TurnError.NONE)
+        {
+            if (tileError == TurnError.NOT_ALLY)
+            {
+                terrain[target.x][target.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
+                Logger.Info(ant.GetInstanceID().ToString() + " bumps (giv) into " + terrain[target.x][target.y].ant.GetInstanceID().ToString() + " at position " + direction);
+            }
             return tileError;
+        }
 
         if (ant.CheckEnergy(Const.GIVE_COST))
             ant.UpdateEnergy(-Const.GIVE_COST);
@@ -654,8 +689,15 @@ public class GameManager : MonoBehaviour
 
         TurnError tileError = CheckWalkability(eggCoord);
         if (tileError != TurnError.NONE)
+        {
+            if (tileError == TurnError.COLLISION_ANT)
+            {
+                terrain[eggCoord.x][eggCoord.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
+                Logger.Info(ant.GetInstanceID().ToString() + " bumps (egg) into " + terrain[eggCoord.x][eggCoord.y].ant.GetInstanceID().ToString() + " at position " + direction);
+            }
             return tileError;
-        
+        }
+
         if (ant.CheckEnergy(Const.EGG_COST))
             ant.UpdateEnergy(-Const.EGG_COST);
         else
