@@ -24,7 +24,7 @@ public abstract class Logger
             this.type = type;
         }
 
-        public string ToString()
+        public override string ToString()
         {
             string prettyType = "TYPE";
             switch (type)
@@ -63,7 +63,7 @@ public abstract class Logger
         hasBeenInit = true;
 
         System.IO.StreamWriter file = new System.IO.StreamWriter(@"Logs.txt");
-        file.WriteLine("\n\n\n========== NEW PROGRAM START - " + System.DateTime.Now.ToString());
+        file.WriteLine("\n========== NEW PROGRAM START - " + System.DateTime.Now.ToString());
         file.Close();
     }
 

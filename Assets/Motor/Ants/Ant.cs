@@ -28,6 +28,7 @@ public abstract class Ant : MonoBehaviour
     [Header("AI management")]
     public Decision decision;
     public PastTurnDigest pastTurn;
+    public List<EventInput> eventInputs;
 
     [Header("Graphics")]
     public Renderer colorRenderer;
@@ -46,6 +47,8 @@ public abstract class Ant : MonoBehaviour
         hp = 100;
         energy = 100;
         carriedFood = 0;
+
+        eventInputs = new List<EventInput>();
     }
     protected void SuperStartLate()
     {

@@ -276,6 +276,7 @@ public class GameManager : MonoBehaviour
 
             case GameStatus.THINKING:
 
+                Logger.Info("========== NEW TURN");
                 FixAllAnimations();
                 winningTeams = CheckForWin();
 
@@ -391,6 +392,7 @@ public class GameManager : MonoBehaviour
                 ValueConverter.Convert(team.queen.carriedFood),
                 null,
                 null,
+                team.queen.eventInputs,
                 team.queen.GetInstanceID()
             ));
             team.queen.displayDirection = team.queen.decision.choice.direction;
@@ -407,6 +409,7 @@ public class GameManager : MonoBehaviour
                    ValueConverter.Convert(worker.carriedFood),
                    null,
                    null,
+                   worker.eventInputs,
                    worker.GetInstanceID()
                 ));
                 worker.displayDirection = worker.decision.choice.direction;
@@ -462,7 +465,9 @@ public class GameManager : MonoBehaviour
     private void ResolveDecision(Ant ant)
     {
         TurnError error = TreatDecision(ant);
+
         ant.pastTurn = new PastTurnDigest(ant.decision, error);
+        ant.eventInputs = new List<EventInput>();
     }
 
     private TurnError TreatDecision(Ant ant)
@@ -610,7 +615,6 @@ public class GameManager : MonoBehaviour
             return TurnError.NO_ENERGY;
 
         Ant beneficiary = terrain[target.x][target.y].ant;
-        Logger.Info("Beneficiary: " + beneficiary.Type);
 
         // Calculates how much to give
         int quantityToGive = Mathf.Min(new int[] { quantity, Const.MAX_GIFT_BY_TURN, ant.carriedFood });

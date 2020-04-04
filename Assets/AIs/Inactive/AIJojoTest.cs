@@ -21,6 +21,11 @@ public class AIJojoTest : AntAI
 
     public override Decision OnWorkerTurn(TurnInformation info)
     {
+        if (info.eventInputs == null)
+            Logger.Info("null");
+        else
+            Logger.Info(info.eventInputs.Count);
+
         ChoiceDescriptor choice = ChoiceDescriptor.ChooseNone();
 
         // If there is no past turn, or if somehow the past turn does not contiain a decision or a choice, the ant moves to the left

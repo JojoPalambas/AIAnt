@@ -17,6 +17,8 @@ public class TurnInformation
     public readonly AnalyseReport analyseReport;
     public readonly CommunicateReport communicateReport;
 
+    public readonly List<EventInput> eventInputs;
+
     public readonly int id;
 
     public TurnInformation(
@@ -30,6 +32,7 @@ public class TurnInformation
         Value carriedFood,
         AnalyseReport analyseReport,
         CommunicateReport communicateReport,
+        List<EventInput> eventInputs,
         int id)
     {
         this.terrainType = terrainType;
@@ -41,6 +44,7 @@ public class TurnInformation
         this.carriedFood = carriedFood;
         this.analyseReport = analyseReport;
         this.communicateReport = communicateReport;
+        this.eventInputs = eventInputs;
         this.id = id;
     }
 }
