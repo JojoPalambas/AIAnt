@@ -50,4 +50,25 @@ public abstract class CoordConverter
     {
         return new Vector3(coord.x, height, coord.y);
     }
+
+    public static HexDirection InvertDirection(HexDirection direction)
+    {
+        switch (direction)
+        {
+            case HexDirection.DOWNLEFT:
+                return HexDirection.UPRIGHT;
+            case HexDirection.LEFT:
+                return HexDirection.RIGHT;
+            case HexDirection.UPLEFT:
+                return HexDirection.DOWNRIGHT;
+            case HexDirection.UPRIGHT:
+                return HexDirection.DOWNLEFT;
+            case HexDirection.RIGHT:
+                return HexDirection.LEFT;
+            case HexDirection.DOWNRIGHT:
+                return HexDirection.UPLEFT;
+            default:
+                return HexDirection.CENTER;
+        }
+    }
 }

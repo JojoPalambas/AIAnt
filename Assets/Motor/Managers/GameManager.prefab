@@ -43,8 +43,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3eeb0199dbb279046818e048454134e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  terrainWidth: 50
-  terrainHeight: 50
+  terrainWidth: 10
+  terrainHeight: 10
   groundTilePrefab: {fileID: -5854769701014639823, guid: 9aa3ba067969fc9469a4ab13c222e603,
     type: 3}
   waterTilePrefab: {fileID: 9141995421065509822, guid: 2fa7134ebd0527f4b9fefb719063c7ce,

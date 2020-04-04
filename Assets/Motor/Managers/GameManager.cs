@@ -277,6 +277,8 @@ public class GameManager : MonoBehaviour
             case GameStatus.THINKING:
 
                 Logger.Info("========== NEW TURN");
+                Logger.Info("===== THINK");
+
                 FixAllAnimations();
                 winningTeams = CheckForWin();
 
@@ -289,6 +291,8 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameStatus.ACTING:
+
+                Logger.Info("===== ACT");
 
                 Act();
 
@@ -378,7 +382,7 @@ public class GameManager : MonoBehaviour
         return null;
     }
 
-    private void Think()
+    private void Think() // FIXME Factorize the two parts of this method
     {
         foreach (Team team in teams)
         {
@@ -396,6 +400,7 @@ public class GameManager : MonoBehaviour
                 team.queen.GetInstanceID()
             ));
             team.queen.displayDirection = team.queen.decision.choice.direction;
+            team.queen.eventInputs = new List<EventInput>(); // The eventInputs are flushed here so they can be filled up by the resolution of the actions
 
             foreach (Worker worker in team.workers)
             {
@@ -413,6 +418,7 @@ public class GameManager : MonoBehaviour
                    worker.GetInstanceID()
                 ));
                 worker.displayDirection = worker.decision.choice.direction;
+                worker.eventInputs = new List<EventInput>(); // The eventInputs are flushed here so they can be filled up by the resolution of the actions
             }
         }
     }
@@ -467,7 +473,6 @@ public class GameManager : MonoBehaviour
         TurnError error = TreatDecision(ant);
 
         ant.pastTurn = new PastTurnDigest(ant.decision, error);
-        ant.eventInputs = new List<EventInput>();
     }
 
     private TurnError TreatDecision(Ant ant)
@@ -517,6 +522,9 @@ public class GameManager : MonoBehaviour
 
     private TurnError ActMove(Ant ant, HexDirection direction)
     {
+        if (direction == HexDirection.CENTER)
+            return TurnError.ILLEGAL;
+
         Vector2Int newCoord = CoordConverter.MoveHex(ant.gameCoordinates, direction);
 
         TurnError tileError = CheckWalkability(newCoord);
@@ -537,6 +545,9 @@ public class GameManager : MonoBehaviour
 
     private TurnError ActAttack(Ant ant, HexDirection direction)
     {
+        if (direction == HexDirection.CENTER)
+            return TurnError.ILLEGAL;
+
         Vector2Int target = CoordConverter.MoveHex(ant.gameCoordinates, direction);
 
         TurnError tileError = CheckAttackability(target, ant);
@@ -554,15 +565,17 @@ public class GameManager : MonoBehaviour
         else
             victim.Hurt(Const.WORKER_ATTACK_DMG);
 
+        victim.eventInputs.Add(new EventInputAttack(CoordConverter.InvertDirection(direction)));
+        Logger.Info(ant.GetInstanceID().ToString() + " attacks " + victim.GetInstanceID().ToString());
+
         return TurnError.NONE;
     }
 
     private TurnError ActEat(Ant ant, HexDirection direction, int quantity)
     {
-        if (direction == HexDirection.CENTER)
-        {
-            return TurnError.NONE;
-        }
+        if (direction == HexDirection.CENTER) // FIXME This should be legal
+            return TurnError.ILLEGAL;
+
         Vector2Int target = CoordConverter.MoveHex(ant.gameCoordinates, direction);
 
         TurnError tileError = CheckEdibility(target);
@@ -582,9 +595,8 @@ public class GameManager : MonoBehaviour
     private TurnError ActStock(Ant ant, HexDirection direction, int quantity)
     {
         if (direction == HexDirection.CENTER)
-        {
             return TurnError.ILLEGAL;
-        }
+
         Vector2Int target = CoordConverter.MoveHex(ant.gameCoordinates, direction);
 
         TurnError tileError = CheckEdibility(target);
@@ -603,6 +615,9 @@ public class GameManager : MonoBehaviour
 
     private TurnError ActGive(Ant ant, HexDirection direction, int quantity)
     {
+        if (direction == HexDirection.CENTER)
+            return TurnError.ILLEGAL;
+
         Vector2Int target = CoordConverter.MoveHex(ant.gameCoordinates, direction);
 
         TurnError tileError = CheckGivability(target, ant);
@@ -629,6 +644,9 @@ public class GameManager : MonoBehaviour
 
     private TurnError ActEgg(Ant ant, HexDirection direction)
     {
+        if (direction == HexDirection.CENTER)
+            return TurnError.ILLEGAL;
+
         if (ant.Type != AntType.QUEEN)
             return TurnError.NOT_QUEEN;
 
