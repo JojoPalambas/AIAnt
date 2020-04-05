@@ -29,6 +29,8 @@ public abstract class Ant : MonoBehaviour
     public Decision decision;
     public PastTurnDigest pastTurn;
     public List<EventInput> eventInputs;
+    public CommunicateReport communicateReport;
+    public AnalyseReport analyseReport;
 
     [Header("Graphics")]
     public Renderer colorRenderer;
@@ -119,6 +121,13 @@ public abstract class Ant : MonoBehaviour
         colorRenderer.material.SetFloat("_Hp", (float) hp / 100);
 
         return false;
+    }
+
+    public void ClearInputs()
+    {
+        eventInputs = new List<EventInput>();
+        communicateReport = null;
+        analyseReport = null;
     }
 
     // Updates the energy by the given value, and returns the excess (in either the positive way or the negative one)

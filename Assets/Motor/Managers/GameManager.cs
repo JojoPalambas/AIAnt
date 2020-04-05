@@ -394,13 +394,13 @@ public class GameManager : MonoBehaviour
                 ValueConverter.Convert(team.queen.energy),
                 ValueConverter.Convert(team.queen.hp),
                 ValueConverter.Convert(team.queen.carriedFood),
-                null,
-                null,
+                team.queen.analyseReport,
+                team.queen.communicateReport,
                 team.queen.eventInputs,
                 team.queen.GetInstanceID()
             ));
             team.queen.displayDirection = team.queen.decision.choice.direction;
-            team.queen.eventInputs = new List<EventInput>(); // The eventInputs are flushed here so they can be filled up by the resolution of the actions
+            team.queen.ClearInputs(); // The inputs are flushed here so they can be filled up by the resolution of the actions
 
             foreach (Worker worker in team.workers)
             {
@@ -412,13 +412,13 @@ public class GameManager : MonoBehaviour
                    ValueConverter.Convert(worker.energy),
                    ValueConverter.Convert(worker.hp),
                    ValueConverter.Convert(worker.carriedFood),
-                   null,
-                   null,
+                   worker.analyseReport,
+                   worker.communicateReport,
                    worker.eventInputs,
                    worker.GetInstanceID()
                 ));
                 worker.displayDirection = worker.decision.choice.direction;
-                worker.eventInputs = new List<EventInput>(); // The eventInputs are flushed here so they can be filled up by the resolution of the actions
+                worker.ClearInputs(); // The inputs are flushed here so they can be filled up by the resolution of the actions
             }
         }
     }
@@ -507,8 +507,7 @@ public class GameManager : MonoBehaviour
                 return TurnError.ILLEGAL;
 
             case ActionType.COMMUNICATE:
-                Debug.LogWarning("Not implemented yet");
-                return TurnError.ILLEGAL;
+                return ActCommunicate(ant, decision.choice.direction, decision.choice.word);
 
             case ActionType.EGG:
                 return ActEgg(ant, decision.choice.direction);
@@ -677,6 +676,54 @@ public class GameManager : MonoBehaviour
         return TurnError.NONE;
     }
 
+    private TurnError ActCommunicate(Ant ant, HexDirection direction, AntWord word)
+    {
+        if (direction == HexDirection.CENTER)
+            return TurnError.ILLEGAL;
+
+        Vector2Int target = CoordConverter.MoveHex(ant.gameCoordinates, direction);
+
+        TurnError tileError = CheckCommunicability(target, ant);
+        if (tileError != TurnError.NONE)
+        {
+            if (tileError == TurnError.NOT_ALLY)
+            {
+                terrain[target.x][target.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
+                Logger.Info(ant.GetInstanceID().ToString() + " bumps (com) into " + terrain[target.x][target.y].ant.GetInstanceID().ToString() + " at position " + direction);
+            }
+            return tileError;
+        }
+
+        if (ant.CheckEnergy(Const.GIVE_COST))
+            ant.UpdateEnergy(-Const.GIVE_COST);
+        else
+            return TurnError.NO_ENERGY;
+
+        Ant receptor = terrain[target.x][target.y].ant;
+
+        Logger.Info(ant.GetInstanceID().ToString() + " communicates with " + receptor.GetInstanceID().ToString() + " at position " + direction);
+
+        // Gives the info to the emitter
+        ant.communicateReport = new CommunicateReport(
+            receptor.Type,
+            receptor.mindset,
+            ValueConverter.Convert(receptor.hp),
+            ValueConverter.Convert(receptor.energy),
+            ValueConverter.Convert(receptor.carriedFood),
+            AntWord.NONE);
+
+        // Gives the cmmunication to the receptor
+        receptor.eventInputs.Add(new EventInputComunicate(CoordConverter.InvertDirection(direction), new CommunicateReport(
+            ant.Type,
+            ant.mindset,
+            ValueConverter.Convert(ant.hp),
+            ValueConverter.Convert(ant.energy),
+            ValueConverter.Convert(ant.carriedFood),
+            word)));
+
+        return TurnError.NONE;
+    }
+
     private TurnError ActEgg(Ant ant, HexDirection direction)
     {
         if (direction == HexDirection.CENTER)
@@ -781,6 +828,27 @@ public class GameManager : MonoBehaviour
         if (tileContent.ant == null)
             return TurnError.NO_TARGET;
         if (tileContent.ant.team.teamId != giver.team.teamId)
+            return TurnError.NOT_ALLY;
+
+        return TurnError.NONE;
+    }
+
+    // Checks that a tile can be walked in
+    private TurnError CheckCommunicability(Vector2Int coord, Ant emitter)
+    {
+        if (!CheckCoordinatesValidity(coord))
+            return TurnError.COLLISION_BOUNDS;
+
+        TileContent tileContent = terrain[coord.x][coord.y];
+        if (tileContent == null)
+        {
+            Debug.Log("Tile content does not exist at coordinates " + coord.ToString());
+            return TurnError.COLLISION_VOID;
+        }
+
+        if (tileContent.ant == null)
+            return TurnError.NO_TARGET;
+        if (tileContent.ant.team.teamId != emitter.team.teamId)
             return TurnError.NOT_ALLY;
 
         return TurnError.NONE;

@@ -7,9 +7,9 @@ public class AIJojoTest : AntAI
     public override Decision OnQueenTurn(TurnInformation info)
     {
         if (info.eventInputs == null)
-            Logger.Info(info.id.ToString() + " - null");
+            Logger.Info("QUEEN " + info.id.ToString() + " - null");
         else
-            Logger.Info(info.id.ToString() + " - " + info.eventInputs.Count + (info.eventInputs.Count > 0 ? ": " + info.eventInputs[0].type + " at " + info.eventInputs[0].direction : ""));
+            Logger.Info("QUEEN " + info.id.ToString() + " - " + info.eventInputs.Count + (info.eventInputs.Count > 0 ? ": " + info.eventInputs[0].type + " at " + info.eventInputs[0].direction : ""));
 
         ChoiceDescriptor choice = ChoiceDescriptor.ChooseNone();
 
@@ -27,9 +27,16 @@ public class AIJojoTest : AntAI
     public override Decision OnWorkerTurn(TurnInformation info)
     {
         if (info.eventInputs == null)
-            Logger.Info(info.id.ToString() + " - null");
+            Logger.Info("WORKER " + info.id.ToString() + " - null");
         else
-            Logger.Info(info.id.ToString() + " - " + info.eventInputs.Count + (info.eventInputs.Count > 0 ? ": " + info.eventInputs[0].type + " at " + info.eventInputs[0].direction : ""));
+        {
+            Logger.Info("WORKER " + info.id.ToString() + " - " + info.eventInputs.Count);
+            foreach (EventInput input in info.eventInputs)
+            {
+                if (input.type == EventInputType.COMMUNICATE)
+                    Logger.Info("WORKER " + info.id.ToString() + " - COMMUNICATE INPUT: " + ((EventInputComunicate) input).payload.word);
+            }
+        }
 
         ChoiceDescriptor choice = ChoiceDescriptor.ChooseNone();
 
@@ -48,34 +55,31 @@ public class AIJojoTest : AntAI
                         choice = ChoiceDescriptor.ChooseMove(info.pastTurn.pastDecision.choice.direction);
                     // If the movement failed because of an ant, the ant attacks it (yes, even if it is an ally)
                     else if (info.pastTurn.error == TurnError.COLLISION_ANT)
-                        choice = ChoiceDescriptor.ChooseAttack(info.pastTurn.pastDecision.choice.direction);
+                    {
+                        Logger.Info("WORKER " + info.id.ToString() + " communicates");
+                        choice = ChoiceDescriptor.ChooseCommunicate(info.pastTurn.pastDecision.choice.direction, AntWord.AW0);
+                    }
                     // If the movement failed because of food, the ant eats it
                     else if (info.pastTurn.error == TurnError.COLLISION_FOOD)
-                        choice = ChoiceDescriptor.ChooseStock(info.pastTurn.pastDecision.choice.direction, 100);
+                        choice = ChoiceDescriptor.ChooseEat(info.pastTurn.pastDecision.choice.direction, 100);
                     // If the movement failed for any other reason, the ant turns right
                     else
                         choice = ChoiceDescriptor.ChooseMove(RotateDirection(info.pastTurn.pastDecision.choice.direction));
                     break;
 
-                // If the action was to attack, the ant keeps attacking
-                case ActionType.ATTACK:
-                    // If the attack succeeded, the ant attacks
+                case ActionType.COMMUNICATE:
                     if (info.pastTurn.error == TurnError.NONE)
-                        choice = ChoiceDescriptor.ChooseAttack(info.pastTurn.pastDecision.choice.direction);
-                    // If the ant tried to attack an ally, it changes its path
-                    if (info.pastTurn.error == TurnError.NOT_ENEMY)
-                        choice = ChoiceDescriptor.ChooseMove(RotateDirection(info.pastTurn.pastDecision.choice.direction));
-                    // If the attack failed, the ant continues moving
+                    {
+                        Logger.Info("WORKER " + info.id.ToString() + (info.communicateReport != null ? " has communicated with " + info.communicateReport.type : " - The report is null!"));
+                        choice = ChoiceDescriptor.ChooseNone();
+                    }
                     else
-                        choice = ChoiceDescriptor.ChooseMove(info.pastTurn.pastDecision.choice.direction);
+                        choice = ChoiceDescriptor.ChooseMove(RotateDirection(info.pastTurn.pastDecision.choice.direction));
                     break;
 
-                // If the action was to eat, the ant keeps eating
-                case ActionType.STOCK:
-                    // If the stocking succeeded, the ant stocks
+                case ActionType.EAT:
                     if (info.pastTurn.error == TurnError.NONE)
-                        choice = ChoiceDescriptor.ChooseStock(info.pastTurn.pastDecision.choice.direction, 100);
-                    // If the stocking failed, the ant continues moving
+                        choice = ChoiceDescriptor.ChooseEat(info.pastTurn.pastDecision.choice.direction, 100);
                     else
                         choice = ChoiceDescriptor.ChooseMove(info.pastTurn.pastDecision.choice.direction);
                     break;
