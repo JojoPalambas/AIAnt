@@ -503,8 +503,7 @@ public class GameManager : MonoBehaviour
                 return ActGive(ant, decision.choice.direction, decision.choice.quantity);
 
             case ActionType.ANALYSE:
-                Debug.LogWarning("Not implemented yet");
-                return TurnError.ILLEGAL;
+                return ActAnalyse(ant, decision.choice.direction);
 
             case ActionType.COMMUNICATE:
                 return ActCommunicate(ant, decision.choice.direction, decision.choice.word);
@@ -724,6 +723,48 @@ public class GameManager : MonoBehaviour
         return TurnError.NONE;
     }
 
+    private TurnError ActAnalyse(Ant ant, HexDirection direction)
+    {
+        if (direction == HexDirection.CENTER)
+            return TurnError.ILLEGAL;
+
+        Vector2Int target = CoordConverter.MoveHex(ant.gameCoordinates, direction);
+
+        TurnError tileError = CheckAnalyzability(target);
+        if (tileError != TurnError.NONE)
+            return tileError;
+
+        // Set all the fields of the response to 0
+        TerrainType terrainType = TerrainType.NONE;
+        AntType antType = AntType.NONE;
+        bool isAllied = false;
+        Value foodValue = Value.NONE;
+
+        if (terrain[target.x][target.y] == null || terrain[target.x][target.y].tile == null) { } // Leave everything like that
+        else
+        {
+            terrainType = terrain[target.x][target.y].tile.Type;
+
+            if (terrain[target.x][target.y].ant == null) { } // Leave everything like that
+            else
+            {
+                antType = terrain[target.x][target.y].ant.Type;
+                isAllied = terrain[target.x][target.y].ant.team.teamId == ant.team.teamId;
+            }
+
+            if (terrain[target.x][target.y].food == null) { } // Leave everything like that
+            else
+            {
+                foodValue = ValueConverter.Convert(terrain[target.x][target.y].food.value);
+            }
+        }
+
+        ant.analyseReport = new AnalyseReport(terrainType, antType, isAllied, foodValue, null);
+        Logger.Info(ant.GetInstanceID().ToString() + " analyzes: " + ant.analyseReport.ToString());
+
+        return TurnError.NONE;
+    }
+
     private TurnError ActEgg(Ant ant, HexDirection direction)
     {
         if (direction == HexDirection.CENTER)
@@ -829,6 +870,15 @@ public class GameManager : MonoBehaviour
             return TurnError.NO_TARGET;
         if (tileContent.ant.team.teamId != giver.team.teamId)
             return TurnError.NOT_ALLY;
+
+        return TurnError.NONE;
+    }
+
+    // Checks that a tile can be walked in
+    private TurnError CheckAnalyzability(Vector2Int coord)
+    {
+        if (!CheckCoordinatesValidity(coord))
+            return TurnError.COLLISION_BOUNDS;
 
         return TurnError.NONE;
     }
