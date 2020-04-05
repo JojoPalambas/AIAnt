@@ -479,7 +479,7 @@ public class GameManager : MonoBehaviour
     {
         Decision decision = ant.decision;
 
-        if (decision.choice == null)
+        if (decision == null || decision.choice == null)
             return TurnError.ILLEGAL;
 
         switch (decision.choice.type)
@@ -512,7 +512,7 @@ public class GameManager : MonoBehaviour
                 return ActEgg(ant, decision.choice.direction);
 
             default:
-                Debug.LogWarning("Unknwo ActionType: " + decision.choice.type);
+                Debug.LogWarning("Unknown ActionType: " + decision.choice.type);
                 return TurnError.ILLEGAL;
 
         }
@@ -530,6 +530,8 @@ public class GameManager : MonoBehaviour
         {
             if (tileError == TurnError.COLLISION_ANT)
             {
+                if (terrain[newCoord.x][newCoord.y].ant.eventInputs == null)
+                    Logger.Info("EVENTINPUTS IS NULL FOR " + terrain[newCoord.x][newCoord.y].ant.GetInstanceID());
                 terrain[newCoord.x][newCoord.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
                 Logger.Info(ant.GetInstanceID().ToString() + " bumps (mvt) into " + terrain[newCoord.x][newCoord.y].ant.GetInstanceID().ToString() + " at position " + direction);
             }
@@ -750,6 +752,8 @@ public class GameManager : MonoBehaviour
             {
                 antType = terrain[target.x][target.y].ant.Type;
                 isAllied = terrain[target.x][target.y].ant.team.teamId == ant.team.teamId;
+
+                terrain[target.x][target.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
             }
 
             if (terrain[target.x][target.y].food == null) { } // Leave everything like that

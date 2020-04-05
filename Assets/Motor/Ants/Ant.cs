@@ -66,6 +66,8 @@ public abstract class Ant : MonoBehaviour
 
     public void Init(Team team, Vector2Int gameCoordinates, Color color)
     {
+        SuperStart();
+
         this.team = team;
         this.gameCoordinates = gameCoordinates;
         this.displayCoordinates = gameCoordinates;

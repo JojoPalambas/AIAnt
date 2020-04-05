@@ -49,7 +49,10 @@ public class AIJojoTest : AntAI
                     if (info.pastTurn.error == TurnError.NONE)
                         choice = ChoiceDescriptor.ChooseMove(info.pastTurn.pastDecision.choice.direction);
                     else
+                    {
                         choice = ChoiceDescriptor.ChooseAnalyse(info.pastTurn.pastDecision.choice.direction);
+                        Debug.Log(info.id + " chooses to analyse");
+                    }
                     break;
 
                 case ActionType.ANALYSE:

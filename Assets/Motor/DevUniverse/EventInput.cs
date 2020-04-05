@@ -6,7 +6,6 @@ public enum EventInputType
 {
     BUMP, // If the ant has been bumped into (failed movement, failed attack, failed egg, etc. (is there anything else?))
     ATTACK, // If the ant has been attacked (only successful attacks, or it will be a "bump")
-    ANALYSE, // If the tile of the ant has been analysed
     COMMUNICATE // If an ant has communicated with this ant
 }
 
@@ -30,11 +29,6 @@ public class EventInputBump : EventInput
 public class EventInputAttack : EventInput
 {
     public EventInputAttack(HexDirection direction) : base(EventInputType.ATTACK, direction) { }
-}
-
-public class EventInputAnalyse : EventInput
-{
-    public EventInputAnalyse(HexDirection direction) : base(EventInputType.ANALYSE, direction) { }
 }
 
 public class EventInputComunicate : EventInput
