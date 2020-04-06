@@ -190,7 +190,6 @@ public abstract class Ant : MonoBehaviour
 
     public void SuperDie()
     {
-        Debug.Log("Destroy " + name);
         Destroy(gameObject);
     }
 }

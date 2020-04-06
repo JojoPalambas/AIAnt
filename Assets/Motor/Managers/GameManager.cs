@@ -17,11 +17,13 @@ public class TileContent
     public Ant ant;
     // public List<Pheromone> pheromones;
     public Food food;
+    public Egg egg;
 
     public TileContent(Tile tile, Food food)
     {
         this.tile = tile;
         this.food = food;
+        this.egg = null;
     }
 }
 
@@ -32,7 +34,7 @@ public class Team
 
     public Queen queen;
     public List<Worker> workers;
-    public List<Worker> newBorns; // FIXME Replace this by eggs
+    public List<Egg> eggs; // FIXME Replace this by eggs
 
     public Color color;
 
@@ -43,7 +45,7 @@ public class Team
 
         this.queen = queen;
         this.workers = new List<Worker>();
-        this.newBorns = new List<Worker>();
+        this.eggs = new List<Egg>();
 
         this.color = color;
     }
@@ -55,9 +57,9 @@ public class Team
         {
             worker.Die();
         }
-        foreach (Worker newBorn in newBorns)
+        foreach (Egg egg in eggs)
         {
-            newBorn.Die();
+            egg.Die();
         }
     }
 }
@@ -65,8 +67,6 @@ public class Team
 public class GameManager : MonoBehaviour
 {
     private GameStatus status = GameStatus.THINKING;
-
-    [Header("Prefabs")]
 
     [Header("Terrain")]
     public int terrainWidth;
@@ -83,6 +83,7 @@ public class GameManager : MonoBehaviour
     [Header("Gameplay")]
     public Queen queenPrefab;
     public Worker workerPrefab;
+    public Egg eggPrefab;
     public List<AntAI> aisToCompete;
     private List<Team> teams;
 
@@ -344,6 +345,11 @@ public class GameManager : MonoBehaviour
             {
                 worker.MoveToTarget(animationTime - currentAnimationTime, animationTime);
             }
+
+            foreach (Egg egg in team.eggs)
+            {
+                egg.ScaleToTarget(animationTime - currentAnimationTime, animationTime);
+            }
         }
 
         foreach (Food food in foods)
@@ -360,10 +366,15 @@ public class GameManager : MonoBehaviour
         foreach (Team team in teams)
         {
             team.queen.FixAnimation();
-            
+
             foreach (Worker worker in team.workers)
             {
                 worker.FixAnimation();
+            }
+
+            foreach (Egg egg in team.eggs)
+            {
+                egg.FixAnimation();
             }
         }
 
@@ -435,12 +446,34 @@ public class GameManager : MonoBehaviour
                 ResolveDecision(worker);
             }
 
-            // Makes all the newborns adult ants
-            foreach (Worker newBorn in team.newBorns)
+            // Makes all the eggs get older, and make the ready ones open
+            List<int> emptyIndexes = new List<int>();
+            for (int i = 0; i < team.eggs.Count; i++)
             {
-                team.workers.Add(newBorn);
+                Egg egg = team.eggs[i];
+
+                egg.roundsBeforeCracking--;
+                if (egg.roundsBeforeCracking <= 0)
+                {
+                    Vector3 newAntWorldPosition = CoordConverter.PlanToWorld(CoordConverter.HexToPos(egg.gameCoordinates), workerPrefab.transform.position.y);
+                    Worker newWorker = Instantiate(workerPrefab, newAntWorldPosition, workerPrefab.transform.rotation);
+
+                    terrain[egg.gameCoordinates.x][egg.gameCoordinates.y].ant = newWorker;
+                    newWorker.Init(egg.team, egg.gameCoordinates, egg.team.color);
+                    team.workers.Add(newWorker);
+
+                    egg.Die();
+                    team.eggs[i] = null;
+                    emptyIndexes.Add(i);
+                }
             }
-            team.newBorns = new List<Worker>();
+            for (int i = emptyIndexes.Count - 1; i >= 0; i--)
+            {
+                if (team.eggs[i] != null)
+                    Debug.Log("Wait. That's illegal.");
+
+                team.eggs.RemoveAt(i);
+            }
         }
         List<Team> finishedTeams = new List<Team>();
         foreach (Team team in teams)
@@ -530,8 +563,6 @@ public class GameManager : MonoBehaviour
         {
             if (tileError == TurnError.COLLISION_ANT)
             {
-                if (terrain[newCoord.x][newCoord.y].ant.eventInputs == null)
-                    Logger.Info("EVENTINPUTS IS NULL FOR " + terrain[newCoord.x][newCoord.y].ant.GetInstanceID());
                 terrain[newCoord.x][newCoord.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
                 Logger.Info(ant.GetInstanceID().ToString() + " bumps (mvt) into " + terrain[newCoord.x][newCoord.y].ant.GetInstanceID().ToString() + " at position " + direction);
             }
@@ -573,14 +604,23 @@ public class GameManager : MonoBehaviour
         else
             return TurnError.NO_ENERGY;
 
-        Ant victim = terrain[target.x][target.y].ant;
-        if (ant.Type == AntType.QUEEN)
-            victim.Hurt(Const.QUEEN_ATTACK_DMG);
-        else
-            victim.Hurt(Const.WORKER_ATTACK_DMG);
+        if (terrain[target.x][target.y].ant != null)
+        {
+            Ant victim = terrain[target.x][target.y].ant;
+            if (ant.Type == AntType.QUEEN)
+                victim.Hurt(Const.QUEEN_ATTACK_DMG);
+            else
+                victim.Hurt(Const.WORKER_ATTACK_DMG);
 
-        victim.eventInputs.Add(new EventInputAttack(CoordConverter.InvertDirection(direction)));
-        Logger.Info(ant.GetInstanceID().ToString() + " attacks " + victim.GetInstanceID().ToString() + " at position " + direction);
+            victim.eventInputs.Add(new EventInputAttack(CoordConverter.InvertDirection(direction)));
+            Logger.Info(ant.GetInstanceID().ToString() + " attacks " + victim.GetInstanceID().ToString() + " at position " + direction);
+        }
+        else if (terrain[target.x][target.y].egg != null)
+        {
+            Egg victim = terrain[target.x][target.y].egg;
+            victim.Die();
+            Logger.Info(ant.GetInstanceID().ToString() + " attacks EGG at position " + direction);
+        }
 
         return TurnError.NONE;
     }
@@ -741,6 +781,7 @@ public class GameManager : MonoBehaviour
         AntType antType = AntType.NONE;
         bool isAllied = false;
         Value foodValue = Value.NONE;
+        bool egg = false;
 
         if (terrain[target.x][target.y] == null || terrain[target.x][target.y].tile == null) { } // Leave everything like that
         else
@@ -761,9 +802,13 @@ public class GameManager : MonoBehaviour
             {
                 foodValue = ValueConverter.Convert(terrain[target.x][target.y].food.value);
             }
+
+            egg = terrain[target.x][target.y].egg != null;
+            if (egg)
+                isAllied = terrain[target.x][target.y].egg.team.teamId == ant.team.teamId;
         }
 
-        ant.analyseReport = new AnalyseReport(terrainType, antType, isAllied, foodValue, null);
+        ant.analyseReport = new AnalyseReport(terrainType, antType, egg, isAllied, foodValue, null);
         Logger.Info(ant.GetInstanceID().ToString() + " analyzes: " + ant.analyseReport.ToString());
 
         return TurnError.NONE;
@@ -795,12 +840,12 @@ public class GameManager : MonoBehaviour
         else
             return TurnError.NO_ENERGY;
 
-        Vector3 newAntWorldPosition = CoordConverter.PlanToWorld(CoordConverter.HexToPos(eggCoord), workerPrefab.transform.position.y);
-        Worker newWorker = Instantiate(workerPrefab, newAntWorldPosition, workerPrefab.transform.rotation);
-        newWorker.Init(ant.team, eggCoord, ant.team.color);
+        Vector3 newEggWorldPosition = CoordConverter.PlanToWorld(CoordConverter.HexToPos(eggCoord), eggPrefab.transform.position.y);
+        Egg newEgg = Instantiate(eggPrefab, newEggWorldPosition, eggPrefab.transform.rotation);
+        newEgg.Init(ant.team, eggCoord, ant.team.color);
 
-        ant.team.newBorns.Add(newWorker);
-        terrain[eggCoord.x][eggCoord.y].ant = newWorker;
+        ant.team.eggs.Add(newEgg);
+        terrain[eggCoord.x][eggCoord.y].egg = newEgg;
 
         return TurnError.NONE;
     }
@@ -826,6 +871,8 @@ public class GameManager : MonoBehaviour
             return TurnError.COLLISION_ANT;
         if (tileContent.food != null)
             return TurnError.COLLISION_FOOD;
+        if (tileContent.egg != null)
+            return TurnError.COLLISION_EGG;
         if (tileContent.tile == null)
             return TurnError.COLLISION_VOID;
         if (tileContent.tile.Type != TerrainType.GROUND)

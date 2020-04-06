@@ -44,6 +44,7 @@ public enum TurnError
     NO_ENERGY, // If the ant does not have enough energy to perform the action
     COLLISION_ANT, // If the action could not be done because the target contained an ant
     COLLISION_FOOD, // If the action could not be done because the target contained food
+    COLLISION_EGG, // If the action could not be done because the target contained an egg
     COLLISION_WATER, // If the action could not be done because the target was a tile of water
     COLLISION_BOUNDS, // If the action could not be done because the target was not in the bounds of the map
     COLLISION_VOID, // If the action could not be done because the target did not contain a tile

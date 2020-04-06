@@ -1,4 +1,4 @@
-[ ] Make the queen spawn eggs instead of ants
+[X] Make the queen spawn eggs instead of ants
 [ ] Make the pheromone system
     [ ] Up to 4 pheromones per cell
     [ ] Each pheromone has a type and a team
@@ -7,3 +7,7 @@
 [ ] Make the tornament system (X games, with a leaderboard at the end)
 [ ] Make the doc
 [ ] Check that no data can be touched from an AI
+[ ] Check all the bumps and eventInputs
+[ ] Raise for quantity and birth energy price
+[ ] Make the terrain hexagonal
+[ ] Make a more organic water and food generator
