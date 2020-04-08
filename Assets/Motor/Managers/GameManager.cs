@@ -536,6 +536,7 @@ public class GameManager : MonoBehaviour
         TurnError error = TreatDecision(ant);
 
         ant.pastTurn = new PastTurnDigest(ant.decision, error);
+        ant.mindset = ant.decision.newMindset;
     }
 
     private TurnError TreatDecision(Ant ant)

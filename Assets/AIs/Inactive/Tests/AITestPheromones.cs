@@ -25,8 +25,6 @@ public class AITestPheromones : AntAI
         for (int i = 0; i < Const.MAX_PHEROMONE_BY_CELL; i++)
             pheromoneSignal.Add(new PheromoneDigest(PheromoneType.PHER0, HexDirection.CENTER));
 
-        Logger.Info("Put " + pheromoneSignal.Count + " pheromones on the ground");
-
         return new Decision(AntMindset.AMS0, choice, pheromoneSignal);
     }
 
@@ -34,12 +32,15 @@ public class AITestPheromones : AntAI
     // The Queen can be found because it leaves four PHER0 pheromones on her tile
     // When an obstacle is hit, its mindset changes and the ant comes back to the queen, changing the pheromone to a pheromone describing the obstacle:
     // - AMS1 and PHER1 mean FOOD
-    // - AMS2 and PHER2 mean WATER
-    // - AMS3 and PHER3 mean OTHER
     public override Decision OnWorkerTurn(TurnInformation info)
     {
+        Logger.Info("===== " + info.id + " thinks!");
+        Logger.Info("Mindset: " + info.mindset);
+        Logger.Info("Pheromones: " + info.pheromones.Count);
+
         ChoiceDescriptor choice = ChoiceDescriptor.ChooseNone();
         AntMindset mindset = AntMindset.AMS0;
+        List<PheromoneDigest> pheromones = info.pheromones;
 
         // If this is the first turn
         if (info.pastTurn == null)
@@ -63,6 +64,7 @@ public class AITestPheromones : AntAI
             {
                 choice = ChoiceDescriptor.ChooseMove(DirectionManip.InvertDirection(queenDirection));
                 mindset = AntMindset.AMS0;
+                pheromones = info.pheromones;
             }
         }
         else
@@ -74,30 +76,55 @@ public class AITestPheromones : AntAI
                     {
                         choice = ChoiceDescriptor.ChooseMove(info.pastTurn.pastDecision.choice.direction);
                         mindset = AntMindset.AMS0;
+                        pheromones = MarkExploration(info.pastTurn.pastDecision.choice.direction);
                     }
                     else if (info.pastTurn.error == TurnError.COLLISION_FOOD)
                     {
-                        choice = ChoiceDescriptor.ChooseMove(DirectionManip.InvertDirection(info.pastTurn.pastDecision.choice.direction));
+                        //choice = ChoiceDescriptor.ChooseMove(DirectionManip.InvertDirection(info.pastTurn.pastDecision.choice.direction));
+                        choice = ChoiceDescriptor.ChooseStock(info.pastTurn.pastDecision.choice.direction, 100);
                         mindset = AntMindset.AMS1;
-                    }
-                    else if (info.pastTurn.error == TurnError.COLLISION_WATER)
-                    {
-                        choice = ChoiceDescriptor.ChooseMove(DirectionManip.InvertDirection(info.pastTurn.pastDecision.choice.direction));
-                        mindset = AntMindset.AMS2;
+                        pheromones = info.pheromones; // Because theoretically the tile has been marked during the previous turn
                     }
                     else
                     {
-                        choice = ChoiceDescriptor.ChooseMove(DirectionManip.InvertDirection(info.pastTurn.pastDecision.choice.direction));
-                        mindset = AntMindset.AMS3;
+                        choice = ChoiceDescriptor.ChooseMove(DirectionManip.RotateDirectionCW(info.pastTurn.pastDecision.choice.direction));
+                        mindset = AntMindset.AMS0;
+                        pheromones = MarkExploration(DirectionManip.RotateDirectionCW(info.pastTurn.pastDecision.choice.direction));
                     }
                     break;
+
+                case AntMindset.AMS1: // COMES BACK WITH FOOD
+                    if (info.pastTurn.pastDecision.choice.type == ActionType.STOCK) // Stock => go back
+                    {
+                        choice = ChoiceDescriptor.ChooseMove(GoBackExploration(info.adjacentPheromoneGroups));
+                        mindset = AntMindset.AMS1;
+                        pheromones = MarkFood(info.pastTurn.pastDecision.choice.direction);
+                    }
+                    else if (info.pastTurn.error == TurnError.NONE) // No error => go back
+                    {
+                        choice = ChoiceDescriptor.ChooseMove(GoBackExploration(info.adjacentPheromoneGroups));
+                        mindset = AntMindset.AMS1;
+                        pheromones = MarkFood(info.pastTurn.pastDecision.choice.direction);
+                    }
+                    else // Error => still try to go back
+                    {
+                        choice = ChoiceDescriptor.ChooseMove(GoBackExploration(info.adjacentPheromoneGroups));
+                        mindset = AntMindset.AMS1;
+                        pheromones = MarkFood(info.pastTurn.pastDecision.choice.direction);
+                    }
+                    break;
+
                 default:
-                    choice = ChoiceDescriptor.ChooseMove(info.pastTurn.pastDecision.choice.direction);
+                    choice = ChoiceDescriptor.ChooseNone();
+                    mindset = AntMindset.AMS0;
+                    pheromones = info.pheromones;
                     break;
             }
         }
 
-        return new Decision(mindset, choice, info.pheromones);
+        Logger.Info("Choice: " + choice.type + " " + choice.direction);
+
+        return new Decision(mindset, choice, pheromones);
     }
 
     private bool IsQueenSignal(List<PheromoneDigest> pheromones)
@@ -120,5 +147,30 @@ public class AITestPheromones : AntAI
         }
 
         return ret;
+    }
+
+    private List<PheromoneDigest> MarkExploration(HexDirection direction)
+    {
+        List<PheromoneDigest> pheromones = new List<PheromoneDigest>();
+        pheromones.Add(new PheromoneDigest(PheromoneType.PHER0, direction));
+        return pheromones;
+    }
+
+    private List<PheromoneDigest> MarkFood(HexDirection direction)
+    {
+        List<PheromoneDigest> pheromones = new List<PheromoneDigest>();
+        pheromones.Add(new PheromoneDigest(PheromoneType.PHER1, direction));
+        return pheromones;
+    }
+
+    private HexDirection GoBackExploration(Dictionary<HexDirection, List<PheromoneDigest>> pheromoneGroups)
+    {
+        foreach (KeyValuePair<HexDirection, List<PheromoneDigest>> entry in pheromoneGroups)
+        {
+            // If there is exactly one pheromone, that it is an exploration one pointing towards the current tile, go there
+            if (entry.Value.Count == 1 && entry.Value[0].type == PheromoneType.PHER0 && entry.Value[0].direction == DirectionManip.InvertDirection(entry.Key))
+                return entry.Key;
+        }
+        return HexDirection.CENTER;
     }
 }
