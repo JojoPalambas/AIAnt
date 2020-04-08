@@ -2,15 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AIJojoTest : AntAI
+public class AITest1 : AntAI
 {
     public override Decision OnQueenTurn(TurnInformation info)
     {
-        if (info.eventInputs == null)
-            Logger.Info("QUEEN " + info.id.ToString() + " - null");
-        else
-            Logger.Info("QUEEN " + info.id.ToString() + " - " + info.eventInputs.Count + (info.eventInputs.Count > 0 ? ": " + info.eventInputs[0].type + " at " + info.eventInputs[0].direction : ""));
-
         ChoiceDescriptor choice = ChoiceDescriptor.ChooseNone();
 
         // If there is no past turn, or if somehow the past turn does not contiain a decision or a choice, the ant moves to the left
@@ -21,20 +16,12 @@ public class AIJojoTest : AntAI
         else
             choice = ChoiceDescriptor.ChooseEgg(info.pastTurn.pastDecision.choice.direction);
 
-        return new Decision(null, AntMindset.AMS0, choice);
+        return new Decision(AntMindset.AMS0, choice, info.pheromones);
     }
 
     public override Decision OnWorkerTurn(TurnInformation info)
     {
-        if (info.eventInputs == null)
-            Logger.Info("WORKER " + info.id.ToString() + " - null");
-        else
-            Logger.Info("WORKER " + info.id.ToString() + " - " + info.eventInputs.Count);
-
-        if (info.analyseReport != null)
-        {
-            Logger.Info("WORKER " + info.id.ToString() + " received analyse report " + info.analyseReport.ToString());
-        }
+        Logger.Info(info.pheromones.Count);
 
         ChoiceDescriptor choice = ChoiceDescriptor.ChooseNone();
 
@@ -65,7 +52,7 @@ public class AIJojoTest : AntAI
             }
         }
 
-        return new Decision(null, AntMindset.AMS0, choice);
+        return new Decision(AntMindset.AMS0, choice, info.pheromones);
     }
 
     // Rotates the given direction clockwise by 1 step

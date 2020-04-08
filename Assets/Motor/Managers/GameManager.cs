@@ -15,7 +15,6 @@ public class TileContent
 {
     public Tile tile;
     public Ant ant;
-    // public List<Pheromone> pheromones;
     public Food food;
     public Egg egg;
 
@@ -29,7 +28,7 @@ public class TileContent
 
 public class Team
 {
-    public int teamId;
+    public readonly int teamId;
     public AntAI ai;
 
     public Queen queen;
@@ -76,6 +75,7 @@ public class GameManager : MonoBehaviour
     public Food foodPrefab;
     private List<Vector2Int> protectedTiles;
     private TileContent[][] terrain;
+    private List<PheromoneDescriptor>[][][] pheromoneMaps;
     private List<Food> foods;
     public float waterProbability;
     public float foodProbability;
@@ -240,6 +240,23 @@ public class GameManager : MonoBehaviour
 
             index++;
         }
+
+        // Create all the pheromone maps
+        pheromoneMaps = new List<PheromoneDescriptor>[teams.Count][][];
+        foreach (Team team in teams)
+        {
+            List<PheromoneDescriptor>[][] pheromoneMap = new List<PheromoneDescriptor>[terrainWidth][];
+            pheromoneMaps[team.teamId] = pheromoneMap;
+
+            for (int i = 0; i < terrainWidth; i++)
+            {
+                pheromoneMap[i] = new List<PheromoneDescriptor>[terrainHeight];
+                for (int j = 0; j < terrainHeight; j++)
+                {
+                    pheromoneMap[i][j] = new List<PheromoneDescriptor>();
+                }
+            }
+        }
     }
 
     // Update is called once per frame
@@ -277,9 +294,6 @@ public class GameManager : MonoBehaviour
 
             case GameStatus.THINKING:
 
-                Logger.Info("========== NEW TURN");
-                Logger.Info("===== THINK");
-
                 FixAllAnimations();
                 winningTeams = CheckForWin();
 
@@ -292,8 +306,6 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameStatus.ACTING:
-
-                Logger.Info("===== ACT");
 
                 Act();
 
@@ -397,41 +409,55 @@ public class GameManager : MonoBehaviour
     {
         foreach (Team team in teams)
         {
-            team.queen.decision = team.ai.OnQueenTurn(new TurnInformation(
-                terrain[team.queen.gameCoordinates.x][team.queen.gameCoordinates.y].tile.Type,
-                team.queen.pastTurn != null ? team.queen.pastTurn.DeepCopy() : null,
-                team.queen.mindset,
-                null,
-                ValueConverter.Convert(team.queen.energy),
-                ValueConverter.Convert(team.queen.hp),
-                ValueConverter.Convert(team.queen.carriedFood),
-                team.queen.analyseReport,
-                team.queen.communicateReport,
-                team.queen.eventInputs,
-                team.queen.GetInstanceID()
-            ));
-            team.queen.displayDirection = team.queen.decision.choice.direction;
-            team.queen.ClearInputs(); // The inputs are flushed here so they can be filled up by the resolution of the actions
+            MakeAntThink(team.queen, team.ai);
 
             foreach (Worker worker in team.workers)
             {
-                worker.decision = team.ai.OnWorkerTurn(new TurnInformation(
-                   terrain[worker.gameCoordinates.x][worker.gameCoordinates.y].tile.Type,
-                   worker.pastTurn != null ? worker.pastTurn.DeepCopy() : null,
-                   worker.mindset,
-                   null,
-                   ValueConverter.Convert(worker.energy),
-                   ValueConverter.Convert(worker.hp),
-                   ValueConverter.Convert(worker.carriedFood),
-                   worker.analyseReport,
-                   worker.communicateReport,
-                   worker.eventInputs,
-                   worker.GetInstanceID()
-                ));
-                worker.displayDirection = worker.decision.choice.direction;
-                worker.ClearInputs(); // The inputs are flushed here so they can be filled up by the resolution of the actions
+                MakeAntThink(worker, team.ai);
             }
         }
+    }
+
+    private void MakeAntThink(Ant ant, AntAI ai)
+    {
+        // Gets all the pheromones on the current tile
+        List<PheromoneDigest> pheromones = PheromoneDigest.ListFromDescriptorList(pheromoneMaps[ant.team.teamId][ant.gameCoordinates.x][ant.gameCoordinates.y]);
+
+        // Gets all the surrounding pheromones
+        Dictionary<HexDirection, List<PheromoneDigest>> pheromoneGroups = new Dictionary<HexDirection, List<PheromoneDigest>>();
+        for (HexDirection direction = (HexDirection) 1; (int) direction < 7; direction++)
+        {
+            if (!CheckCoordinatesValidity(CoordConverter.MoveHex(ant.gameCoordinates, direction))
+                || terrain[ant.gameCoordinates.x][ant.gameCoordinates.y] == null)
+                pheromoneGroups.Add(direction, PheromoneDigest.ListFromDescriptorList(null));
+            //pheromoneGroups.Add(new AdjacentPheromoneGroup(direction, PheromoneDigest.ListFromDescriptorList(null)));
+            else
+                pheromoneGroups.Add(direction, PheromoneDigest.ListFromDescriptorList(pheromoneMaps[ant.team.teamId][ant.gameCoordinates.x][ant.gameCoordinates.y]));
+        }
+
+        TurnInformation info = new TurnInformation(
+            terrain[ant.gameCoordinates.x][ant.gameCoordinates.y].tile.Type,
+            ant.pastTurn != null ? ant.pastTurn.DeepCopy() : null,
+            ant.mindset,
+            pheromones,
+            pheromoneGroups,
+            ValueConverter.Convert(ant.energy),
+            ValueConverter.Convert(ant.hp),
+            ValueConverter.Convert(ant.carriedFood),
+            ant.analyseReport,
+            ant.communicateReport,
+            ant.eventInputs,
+            ant.GetInstanceID()
+        );
+        if (ant.Type == AntType.QUEEN)
+            ant.decision = ai.OnQueenTurn(info);
+        else if (ant.Type == AntType.WORKER)
+            ant.decision = ai.OnWorkerTurn(info);
+        else
+            Debug.LogError("This ant has an unknown type!");
+
+        ant.displayDirection = ant.decision.choice.direction;
+        ant.ClearInputs(); // The inputs are flushed here so they can be filled up by the resolution of the actions
     }
 
     private void Act()
@@ -505,6 +531,9 @@ public class GameManager : MonoBehaviour
     {
         TurnError error = TreatDecision(ant);
 
+        // Placing the pheromones: the pheromones number check is made by the list-converting method
+        pheromoneMaps[ant.team.teamId][ant.gameCoordinates.x][ant.gameCoordinates.y] = PheromoneDescriptor.ListFromDigestList(ant.decision.pheromones);
+
         ant.pastTurn = new PastTurnDigest(ant.decision, error);
     }
 
@@ -564,7 +593,6 @@ public class GameManager : MonoBehaviour
             if (tileError == TurnError.COLLISION_ANT)
             {
                 terrain[newCoord.x][newCoord.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
-                Logger.Info(ant.GetInstanceID().ToString() + " bumps (mvt) into " + terrain[newCoord.x][newCoord.y].ant.GetInstanceID().ToString() + " at position " + direction);
             }
             return tileError;
         }
@@ -594,7 +622,6 @@ public class GameManager : MonoBehaviour
             if (tileError == TurnError.NOT_ENEMY)
             {
                 terrain[target.x][target.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
-                Logger.Info(ant.GetInstanceID().ToString() + " bumps (atk) into " + terrain[target.x][target.y].ant.GetInstanceID().ToString() + " at position " + direction);
             }
             return tileError;
         }
@@ -613,13 +640,11 @@ public class GameManager : MonoBehaviour
                 victim.Hurt(Const.WORKER_ATTACK_DMG);
 
             victim.eventInputs.Add(new EventInputAttack(CoordConverter.InvertDirection(direction)));
-            Logger.Info(ant.GetInstanceID().ToString() + " attacks " + victim.GetInstanceID().ToString() + " at position " + direction);
         }
         else if (terrain[target.x][target.y].egg != null)
         {
             Egg victim = terrain[target.x][target.y].egg;
             victim.Die();
-            Logger.Info(ant.GetInstanceID().ToString() + " attacks EGG at position " + direction);
         }
 
         return TurnError.NONE;
@@ -638,7 +663,6 @@ public class GameManager : MonoBehaviour
             if (tileError == TurnError.COLLISION_ANT)
             {
                 terrain[target.x][target.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
-                Logger.Info(ant.GetInstanceID().ToString() + " bumps (eat) into " + terrain[target.x][target.y].ant.GetInstanceID().ToString() + " at position " + direction);
             }
             return tileError;
         }
@@ -666,7 +690,6 @@ public class GameManager : MonoBehaviour
             if (tileError == TurnError.COLLISION_ANT)
             {
                 terrain[target.x][target.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
-                Logger.Info(ant.GetInstanceID().ToString() + " bumps (stk) into " + terrain[target.x][target.y].ant.GetInstanceID().ToString() + " at position " + direction);
             }
             return tileError;
         }
@@ -694,7 +717,6 @@ public class GameManager : MonoBehaviour
             if (tileError == TurnError.NOT_ALLY)
             {
                 terrain[target.x][target.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
-                Logger.Info(ant.GetInstanceID().ToString() + " bumps (giv) into " + terrain[target.x][target.y].ant.GetInstanceID().ToString() + " at position " + direction);
             }
             return tileError;
         }
@@ -730,7 +752,6 @@ public class GameManager : MonoBehaviour
             if (tileError == TurnError.NOT_ALLY)
             {
                 terrain[target.x][target.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
-                Logger.Info(ant.GetInstanceID().ToString() + " bumps (com) into " + terrain[target.x][target.y].ant.GetInstanceID().ToString() + " at position " + direction);
             }
             return tileError;
         }
@@ -741,8 +762,6 @@ public class GameManager : MonoBehaviour
             return TurnError.NO_ENERGY;
 
         Ant receptor = terrain[target.x][target.y].ant;
-
-        Logger.Info(ant.GetInstanceID().ToString() + " communicates with " + receptor.GetInstanceID().ToString() + " at position " + direction);
 
         // Gives the info to the emitter
         ant.communicateReport = new CommunicateReport(
@@ -809,7 +828,6 @@ public class GameManager : MonoBehaviour
         }
 
         ant.analyseReport = new AnalyseReport(terrainType, antType, egg, isAllied, foodValue, null);
-        Logger.Info(ant.GetInstanceID().ToString() + " analyzes: " + ant.analyseReport.ToString());
 
         return TurnError.NONE;
     }
@@ -830,7 +848,6 @@ public class GameManager : MonoBehaviour
             if (tileError == TurnError.COLLISION_ANT)
             {
                 terrain[eggCoord.x][eggCoord.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
-                Logger.Info(ant.GetInstanceID().ToString() + " bumps (egg) into " + terrain[eggCoord.x][eggCoord.y].ant.GetInstanceID().ToString() + " at position " + direction);
             }
             return tileError;
         }

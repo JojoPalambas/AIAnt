@@ -19,8 +19,7 @@ public class TornamentManager : MonoBehaviour
         ais = new List<AntAI>();
 
         // This is where the fighting AIs are set
-        ais.Add(new AIJojoTest());
-        ais.Add(new AIJojoTest());
+        ais.Add(new AITestPheromones());
 
         gameManager = Instantiate(gameManagerPrefab, transform);
         gameManager.SetAIs(ais);

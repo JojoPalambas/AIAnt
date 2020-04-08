@@ -12,6 +12,6 @@ public class PastTurnDigest
 
     public PastTurnDigest DeepCopy()
     {
-        return new PastTurnDigest(pastDecision != null ? pastDecision.DeepCopy() : null, error);
+        return new PastTurnDigest(pastDecision != null ? pastDecision.DeepCopyWithoutIsAllied() : null, error);
     }
 }

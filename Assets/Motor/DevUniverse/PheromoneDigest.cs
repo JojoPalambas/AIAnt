@@ -1,20 +1,38 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 public class PheromoneDigest
 {
     public readonly PheromoneType type;
-    public readonly PheromoneIntensity intensity;
-    public readonly List<HexDirection> inputs;
-    public readonly List<HexDirection> outputs;
-    public readonly bool isAllied;
+    public readonly HexDirection direction;
 
-    public PheromoneDigest(PheromoneType type, PheromoneIntensity intensity, List<HexDirection> inputs, List<HexDirection> outputs, bool isAllied)
+    public PheromoneDigest(PheromoneType type, HexDirection direction)
     {
         this.type = type;
-        this.intensity = intensity;
-        this.inputs = inputs;
-        this.outputs = outputs;
-        this.isAllied = isAllied;
+        this.direction = direction;
+    }
+
+    public static PheromoneDigest FromDescriptor(PheromoneDescriptor descriptor)
+    {
+        if (descriptor == null)
+            return null;
+
+        return new PheromoneDigest(descriptor.type, descriptor.direction);
+    }
+
+    public static List<PheromoneDigest> ListFromDescriptorList(List<PheromoneDescriptor> descriptors)
+    {
+        List<PheromoneDigest> ret = new List<PheromoneDigest>();
+        for (int i = 0; i < Const.MAX_PHEROMONE_BY_CELL; i++)
+        {
+            if (descriptors != null && i < descriptors.Count)
+            {
+                if (descriptors[i] != null)
+                    ret.Add(FromDescriptor(descriptors[i]));
+            }
+            else
+                break;
+        }
+
+        return ret;
     }
 }

@@ -57,19 +57,10 @@ public enum TurnError
 
 public enum PheromoneType
 {
-    NONE,
     PHER0,
     PHER1,
     PHER2,
     PHER3
-}
-
-public enum PheromoneIntensity
-{
-    INT0,
-    INT1,
-    INT2,
-    INT3
 }
 
 public enum AntMindset

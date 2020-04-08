@@ -24,8 +24,11 @@ public abstract class Const
     public static int GIVE_COST = 5;
     public static int EGG_COST = 25;
 
-    // Others
+    // Action quantity by turn
     public static int MAX_FOOD_BY_TURN = 25;
     public static int MAX_STOCK_BY_TURN = 50;
     public static int MAX_GIFT_BY_TURN = 50;
+
+    // Other
+    public static int MAX_PHEROMONE_BY_CELL = 4;
 }

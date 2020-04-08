@@ -384,10 +384,10 @@ MonoBehaviour:
   gameManagerPrefab: {fileID: 5965468680368381831, guid: f6e31cabbd27c6d479c7d712fe89dcb6,
     type: 3}
   colors:
-  - {r: 1, g: 0, b: 0, a: 0}
-  - {r: 0, g: 0, b: 1, a: 0}
-  - {r: 0, g: 1, b: 0, a: 0}
-  - {r: 0.4245283, g: 0.4245283, b: 0.4245283, a: 0}
+  - {r: 1, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0, b: 1, a: 1}
+  - {r: 0, g: 1, b: 0, a: 1}
+  - {r: 0.5943396, g: 0.3416819, b: 0, a: 1}
 --- !u!4 &1446555657
 Transform:
   m_ObjectHideFlags: 0

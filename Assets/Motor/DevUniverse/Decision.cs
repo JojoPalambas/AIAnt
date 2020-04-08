@@ -1,19 +1,29 @@
-﻿
+﻿using System.Collections.Generic;
+
 public class Decision
 {
-    public readonly PheromonePlacement pheromone;
     public readonly AntMindset newMindset;
     public readonly ChoiceDescriptor choice;
+    public readonly List<PheromoneDigest> pheromones;
 
-    public Decision(PheromonePlacement pheromone, AntMindset newMindset, ChoiceDescriptor choice)
+    public Decision(AntMindset newMindset, ChoiceDescriptor choice, List<PheromoneDigest> pheromones)
     {
-        this.pheromone = pheromone;
         this.newMindset = newMindset;
         this.choice = choice;
+        this.pheromones = pheromones;
     }
 
-    public Decision DeepCopy()
+    public Decision DeepCopyWithoutIsAllied()
     {
-        return new Decision(pheromone != null ? pheromone.DeepCopy() : null, newMindset, choice != null ? choice.DeepCopy() : null);
+        List<PheromoneDigest> pheromonesCopy = new List<PheromoneDigest>();
+        foreach (PheromoneDigest pheromone in this.pheromones)
+        {
+            if (pheromone != null)
+                pheromonesCopy.Add(new PheromoneDigest(pheromone.type, pheromone.direction));
+            else
+                pheromonesCopy.Add(null);
+        }
+
+        return new Decision(newMindset, choice != null ? choice.DeepCopy() : null, pheromonesCopy);
     }
 }

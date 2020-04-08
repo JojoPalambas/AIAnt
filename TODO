@@ -4,6 +4,7 @@
     [ ] Each pheromone has a type and a team
     [ ] At its turn, an ant has the list of all its team's pheromones in its cell and all the adjacent ones
     [ ] At its turn, an ant has to return the new list of pheromones for the cell it was in at the beginning
+[ ] Make the GIVE action give food instead of energy
 [ ] Make the tornament system (X games, with a leaderboard at the end)
 [ ] Make the doc
 [ ] Check that no data can be touched from an AI
