@@ -15,12 +15,19 @@ public class AITestPheromones : AntAI
 
         // If there was an error
         else if (info.pastTurn.error != TurnError.NONE)
-            choice = ChoiceDescriptor.ChooseEgg(RotateDirection(info.pastTurn.pastDecision.choice.direction));
+            choice = ChoiceDescriptor.ChooseEgg(DirectionManip.RotateDirectionCW(info.pastTurn.pastDecision.choice.direction));
 
         else
             choice = ChoiceDescriptor.ChooseEgg(info.pastTurn.pastDecision.choice.direction);
 
-        return new Decision(AntMindset.AMS0, choice, info.pheromones);
+        // Puts the pheromone signal on the ground to show its position
+        List<PheromoneDigest> pheromoneSignal = new List<PheromoneDigest>();
+        for (int i = 0; i < Const.MAX_PHEROMONE_BY_CELL; i++)
+            pheromoneSignal.Add(new PheromoneDigest(PheromoneType.PHER0, HexDirection.CENTER));
+
+        Logger.Info("Put " + pheromoneSignal.Count + " pheromones on the ground");
+
+        return new Decision(AntMindset.AMS0, choice, pheromoneSignal);
     }
 
     // The Worker first goes away from the queen (mindset AMS0), leaving the PHER0 (for exploration) pheromone behind
@@ -32,29 +39,86 @@ public class AITestPheromones : AntAI
     public override Decision OnWorkerTurn(TurnInformation info)
     {
         ChoiceDescriptor choice = ChoiceDescriptor.ChooseNone();
+        AntMindset mindset = AntMindset.AMS0;
 
-        return new Decision(AntMindset.AMS0, choice, info.pheromones);
+        // If this is the first turn
+        if (info.pastTurn == null)
+        {
+            // The Worker tries to find the Queen
+            HexDirection queenDirection = HexDirection.CENTER;
+            foreach (KeyValuePair<HexDirection, List<PheromoneDigest>> entry in info.adjacentPheromoneGroups)
+            {
+                if (IsQueenSignal(entry.Value))
+                {
+                    queenDirection = entry.Key;
+                    break;
+                }
+            }
+
+            if (queenDirection == HexDirection.CENTER)
+            {
+                // Logger.Info("The Queen is missing!");
+            }
+            else
+            {
+                choice = ChoiceDescriptor.ChooseMove(DirectionManip.InvertDirection(queenDirection));
+                mindset = AntMindset.AMS0;
+            }
+        }
+        else
+        {
+            switch (info.mindset)
+            {
+                case AntMindset.AMS0: // FLEES THE QUEEN
+                    if (info.pastTurn.error == TurnError.NONE)
+                    {
+                        choice = ChoiceDescriptor.ChooseMove(info.pastTurn.pastDecision.choice.direction);
+                        mindset = AntMindset.AMS0;
+                    }
+                    else if (info.pastTurn.error == TurnError.COLLISION_FOOD)
+                    {
+                        choice = ChoiceDescriptor.ChooseMove(DirectionManip.InvertDirection(info.pastTurn.pastDecision.choice.direction));
+                        mindset = AntMindset.AMS1;
+                    }
+                    else if (info.pastTurn.error == TurnError.COLLISION_WATER)
+                    {
+                        choice = ChoiceDescriptor.ChooseMove(DirectionManip.InvertDirection(info.pastTurn.pastDecision.choice.direction));
+                        mindset = AntMindset.AMS2;
+                    }
+                    else
+                    {
+                        choice = ChoiceDescriptor.ChooseMove(DirectionManip.InvertDirection(info.pastTurn.pastDecision.choice.direction));
+                        mindset = AntMindset.AMS3;
+                    }
+                    break;
+                default:
+                    choice = ChoiceDescriptor.ChooseMove(info.pastTurn.pastDecision.choice.direction);
+                    break;
+            }
+        }
+
+        return new Decision(mindset, choice, info.pheromones);
     }
 
-    // Rotates the given direction clockwise by 1 step
-    private HexDirection RotateDirection(HexDirection direction)
+    private bool IsQueenSignal(List<PheromoneDigest> pheromones)
     {
-        switch (direction)
+        bool ret = true;
+        if (pheromones.Count < 4)
         {
-            case HexDirection.LEFT:
-                return HexDirection.UPLEFT;
-            case HexDirection.UPLEFT:
-                return HexDirection.UPRIGHT;
-            case HexDirection.UPRIGHT:
-                return HexDirection.RIGHT;
-            case HexDirection.RIGHT:
-                return HexDirection.DOWNRIGHT;
-            case HexDirection.DOWNRIGHT:
-                return HexDirection.DOWNLEFT;
-            case HexDirection.DOWNLEFT:
-                return HexDirection.LEFT;
-            default:
-                return HexDirection.LEFT;
+            ret = false;
         }
+        else
+        {
+            foreach (PheromoneDigest pheromone in pheromones)
+            {
+                if (pheromone.type != PheromoneType.PHER0)
+                {
+                    ret = false;
+                    break;
+                }
+            }
+        }
+
+        return ret;
     }
 }

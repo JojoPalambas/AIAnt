@@ -427,12 +427,12 @@ public class GameManager : MonoBehaviour
         Dictionary<HexDirection, List<PheromoneDigest>> pheromoneGroups = new Dictionary<HexDirection, List<PheromoneDigest>>();
         for (HexDirection direction = (HexDirection) 1; (int) direction < 7; direction++)
         {
-            if (!CheckCoordinatesValidity(CoordConverter.MoveHex(ant.gameCoordinates, direction))
-                || terrain[ant.gameCoordinates.x][ant.gameCoordinates.y] == null)
+            Vector2Int currentCoord = CoordConverter.MoveHex(ant.gameCoordinates, direction);
+
+            if (!CheckCoordinatesValidity(currentCoord))
                 pheromoneGroups.Add(direction, PheromoneDigest.ListFromDescriptorList(null));
-            //pheromoneGroups.Add(new AdjacentPheromoneGroup(direction, PheromoneDigest.ListFromDescriptorList(null)));
             else
-                pheromoneGroups.Add(direction, PheromoneDigest.ListFromDescriptorList(pheromoneMaps[ant.team.teamId][ant.gameCoordinates.x][ant.gameCoordinates.y]));
+                pheromoneGroups.Add(direction, PheromoneDigest.ListFromDescriptorList(pheromoneMaps[ant.team.teamId][currentCoord.x][currentCoord.y]));
         }
 
         TurnInformation info = new TurnInformation(
@@ -529,10 +529,11 @@ public class GameManager : MonoBehaviour
 
     private void ResolveDecision(Ant ant)
     {
-        TurnError error = TreatDecision(ant);
 
         // Placing the pheromones: the pheromones number check is made by the list-converting method
         pheromoneMaps[ant.team.teamId][ant.gameCoordinates.x][ant.gameCoordinates.y] = PheromoneDescriptor.ListFromDigestList(ant.decision.pheromones);
+
+        TurnError error = TreatDecision(ant);
 
         ant.pastTurn = new PastTurnDigest(ant.decision, error);
     }

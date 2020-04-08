@@ -21,8 +21,6 @@ public class AITest1 : AntAI
 
     public override Decision OnWorkerTurn(TurnInformation info)
     {
-        Logger.Info(info.pheromones.Count);
-
         ChoiceDescriptor choice = ChoiceDescriptor.ChooseNone();
 
         // If there is no past turn, or if somehow the past turn does not contiain a decision or a choice, the ant moves to the left
