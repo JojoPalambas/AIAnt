@@ -64,7 +64,7 @@ public class AITestPheromones : AntAI
             {
                 choice = ChoiceDescriptor.ChooseMove(DirectionManip.InvertDirection(queenDirection));
                 mindset = AntMindset.AMS0;
-                pheromones = info.pheromones;
+                pheromones = MarkExploration(DirectionManip.InvertDirection(queenDirection));
             }
         }
         else

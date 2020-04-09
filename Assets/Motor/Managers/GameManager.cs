@@ -91,6 +91,7 @@ public class GameManager : MonoBehaviour
     public float animationTime;
     public float rotationTime;
     private float currentAnimationTime;
+    public PheromoneMapDisplayer pheromoneMapDisplayer;
     
     [System.NonSerialized] public List<Color> teamColors;
 
@@ -257,6 +258,8 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
+
+        pheromoneMapDisplayer.InitMap(teams, terrainWidth, terrainHeight);
     }
 
     // Update is called once per frame
@@ -532,6 +535,9 @@ public class GameManager : MonoBehaviour
 
         // Placing the pheromones: the pheromones number check is made by the list-converting method
         pheromoneMaps[ant.team.teamId][ant.gameCoordinates.x][ant.gameCoordinates.y] = PheromoneDescriptor.ListFromDigestList(ant.decision.pheromones);
+
+        // Displays the pheromones
+        pheromoneMapDisplayer.UpdateCell(pheromoneMaps, ant.gameCoordinates.x, ant.gameCoordinates.y);
 
         TurnError error = TreatDecision(ant);
 

@@ -102,6 +102,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4747960596459981091}
+  - component: {fileID: 1611490729409517850}
   m_Layer: 0
   m_Name: Pheromone
   m_TagString: Untagged
@@ -124,6 +125,21 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1611490729409517850
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4747960596459981088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a84465f966af04245b6601362c941ed5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  type: 0
+  colorRenderer: {fileID: 4747960595769561160}
+  displayDirection: 0
 --- !u!1 &4747960596832864394
 GameObject:
   m_ObjectHideFlags: 0

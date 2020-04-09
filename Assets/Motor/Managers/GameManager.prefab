@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7161472866171268965}
   - component: {fileID: 5965468680368381831}
+  - component: {fileID: 1905891281267833433}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -61,3 +62,27 @@ MonoBehaviour:
     type: 3}
   animationTime: 0.25
   rotationTime: 0.25
+  pheromoneMapDisplayer: {fileID: 1905891281267833433}
+--- !u!114 &1905891281267833433
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1168204881976701869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf38b037e797fd14a939117874f36330, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayerPrefab: {fileID: 1611490729409517850, guid: d48494cb5ce3d5045ab98b344f0ef6f3,
+    type: 3}
+  displayOptions:
+  - type: 0
+    teamId: 0
+    enabled: 1
+    color: {r: 1, g: 0, b: 0, a: 1}
+  - type: 1
+    teamId: 0
+    enabled: 1
+    color: {r: 1, g: 0.48850012, b: 0, a: 1}
