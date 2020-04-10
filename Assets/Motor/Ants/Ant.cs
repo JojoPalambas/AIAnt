@@ -44,16 +44,6 @@ public abstract class Ant : MonoBehaviour
     // Start is called before the first frame update
     protected void SuperStart()
     {
-        pastTurn = null;
-
-        hp = 100;
-        energy = 100;
-        carriedFood = 0;
-
-        eventInputs = new List<EventInput>();
-    }
-    protected void SuperStartLate()
-    {
         colorRenderer.material.SetColor("_Color", teamColor);
         colorRenderer.material.SetFloat("_Hp", (float) hp / 100);
         colorRenderer.material.SetFloat("_Energy", (float) energy / 100);
@@ -64,7 +54,7 @@ public abstract class Ant : MonoBehaviour
     {
     }
 
-    public void Init(Team team, Vector2Int gameCoordinates, Color color)
+    public virtual void Init(Team team, Vector2Int gameCoordinates, Color color)
     {
         SuperStart();
 
@@ -72,6 +62,10 @@ public abstract class Ant : MonoBehaviour
         this.gameCoordinates = gameCoordinates;
         this.displayCoordinates = gameCoordinates;
         this.teamColor = color;
+
+        pastTurn = null;
+
+        eventInputs = new List<EventInput>();
     }
 
     public void RotateToTarget(float elapsedTime, float totalTime)

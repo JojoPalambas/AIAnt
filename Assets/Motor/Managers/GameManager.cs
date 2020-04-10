@@ -741,7 +741,7 @@ public class GameManager : MonoBehaviour
         quantityToGive -= ant.UpdateStock(-quantityToGive);
 
         // Give the energy to the beneficiary, then gives back the excess to the giver
-        int quantityToGiveBack = quantityToGive - beneficiary.UpdateEnergy(quantityToGive);
+        int quantityToGiveBack = quantityToGive - beneficiary.UpdateStock(quantityToGive);
         ant.UpdateStock(quantityToGiveBack);
 
         return TurnError.NONE;

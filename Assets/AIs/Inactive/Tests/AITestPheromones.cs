@@ -7,6 +7,8 @@ public class AITestPheromones : AntAI
     // The Queen leaves four PHER0 pheromones on its tile to show where she is
     public override Decision OnQueenTurn(TurnInformation info)
     {
+        Logger.Info(info.carriedFood);
+
         ChoiceDescriptor choice = ChoiceDescriptor.ChooseNone();
         
         // If it is the first turn
@@ -34,10 +36,6 @@ public class AITestPheromones : AntAI
     // - AMS1 and PHER1 mean FOOD
     public override Decision OnWorkerTurn(TurnInformation info)
     {
-        Logger.Info("===== " + info.id + " thinks!");
-        Logger.Info("Mindset: " + info.mindset);
-        Logger.Info("Pheromones: " + info.pheromones.Count);
-
         ChoiceDescriptor choice = ChoiceDescriptor.ChooseNone();
         AntMindset mindset = AntMindset.AMS0;
         List<PheromoneDigest> pheromones = info.pheromones;
@@ -94,6 +92,7 @@ public class AITestPheromones : AntAI
                     break;
 
                 case AntMindset.AMS1: // COMES BACK WITH FOOD
+                    Debug.Log(info.pastTurn.error);
                     if (info.pastTurn.pastDecision.choice.type == ActionType.STOCK) // Stock => go back
                     {
                         choice = ChoiceDescriptor.ChooseMove(GoBackExploration(info.adjacentPheromoneGroups));
@@ -102,7 +101,15 @@ public class AITestPheromones : AntAI
                     }
                     else if (info.pastTurn.error == TurnError.NONE) // No error => go back
                     {
-                        choice = ChoiceDescriptor.ChooseMove(GoBackExploration(info.adjacentPheromoneGroups));
+                        HexDirection direction = GoBackExploration(info.adjacentPheromoneGroups);
+                        choice = ChoiceDescriptor.ChooseMove(direction != HexDirection.CENTER ? direction : info.pastTurn.pastDecision.choice.direction);
+                        mindset = AntMindset.AMS1;
+                        pheromones = MarkFood(info.pastTurn.pastDecision.choice.direction);
+                    }
+                    else if (info.pastTurn.error == TurnError.COLLISION_ANT) // No error => go back
+                    {
+                        Debug.Log(info.id + " GIVES!");
+                        choice = ChoiceDescriptor.ChooseGive(info.pastTurn.pastDecision.choice.direction, 100);
                         mindset = AntMindset.AMS1;
                         pheromones = MarkFood(info.pastTurn.pastDecision.choice.direction);
                     }
@@ -121,8 +128,6 @@ public class AITestPheromones : AntAI
                     break;
             }
         }
-
-        Logger.Info("Choice: " + choice.type + " " + choice.direction);
 
         return new Decision(mindset, choice, pheromones);
     }

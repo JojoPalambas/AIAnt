@@ -9,7 +9,7 @@ public abstract class Const
     // Queen stats
     public static int QUEEN_STARTING_HP = 100;
     public static int QUEEN_STARTING_ENERGY = 100;
-    public static int QUEEN_STARTING_FOOD = 100;
+    public static int QUEEN_STARTING_FOOD = 0;
     public static int QUEEN_ATTACK_DMG = 15;
 
     // Worker stats

@@ -13,12 +13,15 @@ public class Queen : Ant
     void Start()
     {
         SuperStart();
+    }
+
+    public override void Init(Team team, Vector2Int gameCoordinates, Color color)
+    {
+        base.Init(team, gameCoordinates, color);
 
         hp = Const.QUEEN_STARTING_HP;
         energy = Const.QUEEN_STARTING_ENERGY;
         carriedFood = Const.QUEEN_STARTING_FOOD;
-
-        SuperStartLate();
     }
 
     // Update is called once per frame
