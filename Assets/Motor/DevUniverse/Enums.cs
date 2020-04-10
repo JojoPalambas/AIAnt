@@ -42,6 +42,7 @@ public enum TurnError
 {
     NONE,
     NO_ENERGY, // If the ant does not have enough energy to perform the action
+    NO_FOOD, // If the ant does not have food to give or enough carried food to eat
     COLLISION_ANT, // If the action could not be done because the target contained an ant
     COLLISION_FOOD, // If the action could not be done because the target contained food
     COLLISION_EGG, // If the action could not be done because the target contained an egg

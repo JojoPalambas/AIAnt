@@ -7,25 +7,39 @@ public class AITestPheromones : AntAI
     // The Queen leaves four PHER0 pheromones on its tile to show where she is
     public override Decision OnQueenTurn(TurnInformation info)
     {
-        Logger.Info(info.carriedFood);
-
         ChoiceDescriptor choice = ChoiceDescriptor.ChooseNone();
-        
-        // If it is the first turn
-        if (info.pastTurn == null || info.pastTurn.pastDecision == null || info.pastTurn.pastDecision.choice == null)
-            choice = ChoiceDescriptor.ChooseEgg((HexDirection) Random.Range(1, 7));
 
-        // If there was an error
-        else if (info.pastTurn.error != TurnError.NONE)
-            choice = ChoiceDescriptor.ChooseEgg(DirectionManip.RotateDirectionCW(info.pastTurn.pastDecision.choice.direction));
+        // If there is enough energy
+        if (info.energy > Value.LOW)
+        {
+            // If it is the first turn
+            if (info.pastTurn == null || info.pastTurn.pastDecision == null || info.pastTurn.pastDecision.choice == null)
+                choice = ChoiceDescriptor.ChooseEgg((HexDirection) Random.Range(1, 7));
 
+            // If there was no error
+            else if (info.pastTurn.error == TurnError.NONE)
+                choice = ChoiceDescriptor.ChooseEgg(info.pastTurn.pastDecision.choice.direction);
+
+            // If there was an error because of auto-egg
+            else if (info.pastTurn.pastDecision.choice.direction == HexDirection.CENTER)
+                choice = ChoiceDescriptor.ChooseEgg(DirectionManip.RotateDirectionCW((HexDirection) Random.Range(1, 7)));
+
+            // If there was an error
+            else
+                choice = ChoiceDescriptor.ChooseEgg(DirectionManip.RotateDirectionCW(info.pastTurn.pastDecision.choice.direction));
+        }
         else
-            choice = ChoiceDescriptor.ChooseEgg(info.pastTurn.pastDecision.choice.direction);
+        {
+            choice = ChoiceDescriptor.ChooseEat(HexDirection.CENTER, 100);
+        }
 
         // Puts the pheromone signal on the ground to show its position
         List<PheromoneDigest> pheromoneSignal = new List<PheromoneDigest>();
         for (int i = 0; i < Const.MAX_PHEROMONE_BY_CELL; i++)
             pheromoneSignal.Add(new PheromoneDigest(PheromoneType.PHER0, HexDirection.CENTER));
+        
+        if (info.pastTurn != null)
+            Logger.Info("QUEEN | " + info.pastTurn.error + " - " + info.carriedFood + " " + info.energy + " - " + choice.type + " " + choice.direction);
 
         return new Decision(AntMindset.AMS0, choice, pheromoneSignal);
     }
@@ -92,14 +106,13 @@ public class AITestPheromones : AntAI
                     break;
 
                 case AntMindset.AMS1: // COMES BACK WITH FOOD
-                    Debug.Log(info.pastTurn.error);
                     if (info.pastTurn.pastDecision.choice.type == ActionType.STOCK) // Stock => go back
                     {
                         choice = ChoiceDescriptor.ChooseMove(GoBackExploration(info.adjacentPheromoneGroups));
                         mindset = AntMindset.AMS1;
                         pheromones = MarkFood(info.pastTurn.pastDecision.choice.direction);
                     }
-                    else if (info.pastTurn.error == TurnError.NONE) // No error => go back
+                    else if (info.pastTurn.error == TurnError.NONE) // No error => go back (if cannot, give food)
                     {
                         HexDirection direction = GoBackExploration(info.adjacentPheromoneGroups);
                         choice = ChoiceDescriptor.ChooseMove(direction != HexDirection.CENTER ? direction : info.pastTurn.pastDecision.choice.direction);
@@ -108,7 +121,6 @@ public class AITestPheromones : AntAI
                     }
                     else if (info.pastTurn.error == TurnError.COLLISION_ANT) // No error => go back
                     {
-                        Debug.Log(info.id + " GIVES!");
                         choice = ChoiceDescriptor.ChooseGive(info.pastTurn.pastDecision.choice.direction, 100);
                         mindset = AntMindset.AMS1;
                         pheromones = MarkFood(info.pastTurn.pastDecision.choice.direction);

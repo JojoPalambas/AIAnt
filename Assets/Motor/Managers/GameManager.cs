@@ -660,8 +660,25 @@ public class GameManager : MonoBehaviour
 
     private TurnError ActEat(Ant ant, HexDirection direction, int quantity)
     {
-        if (direction == HexDirection.CENTER) // FIXME This should be legal
-            return TurnError.ILLEGAL;
+        int quantityToEat = 0;
+
+        if (direction == HexDirection.CENTER)
+        {
+            if (ant.carriedFood <= 0)
+                return TurnError.NO_FOOD;
+
+            // Calculates how much to eat
+            quantityToEat = Mathf.Min(new int[] { quantity, Const.MAX_EAT_BY_TURN, ant.carriedFood });
+            quantityToEat -= ant.UpdateStock(-quantityToEat);
+
+            // Transforms the food to energy, then stock back the excess
+            int quantityToStockBack = quantityToEat - ant.UpdateEnergy(quantityToEat);
+            ant.UpdateStock(quantityToStockBack);
+
+            Logger.Info(ant.Type + " HAS EATEN " + quantityToEat + " FROM SELF");
+
+            return TurnError.NONE;
+        }
 
         Vector2Int target = CoordConverter.MoveHex(ant.gameCoordinates, direction);
 
@@ -676,7 +693,7 @@ public class GameManager : MonoBehaviour
         }
 
         Food victim = terrain[target.x][target.y].food;
-        int quantityToEat = Mathf.Min(quantity, Const.MAX_FOOD_BY_TURN);
+        quantityToEat = Mathf.Min(quantity, Const.MAX_EAT_BY_TURN);
         quantityToEat = victim.GetFood(quantityToEat);
 
         // The ant can eat more than it can store, so that it can remove food from the terrain if needed
@@ -734,6 +751,9 @@ public class GameManager : MonoBehaviour
         else
             return TurnError.NO_ENERGY;
 
+        if (ant.carriedFood <= 0)
+            return TurnError.NO_FOOD;
+
         Ant beneficiary = terrain[target.x][target.y].ant;
 
         // Calculates how much to give
@@ -743,6 +763,8 @@ public class GameManager : MonoBehaviour
         // Give the energy to the beneficiary, then gives back the excess to the giver
         int quantityToGiveBack = quantityToGive - beneficiary.UpdateStock(quantityToGive);
         ant.UpdateStock(quantityToGiveBack);
+
+        Logger.Info(quantityToGive + " food has been given to " + beneficiary.Type);
 
         return TurnError.NONE;
     }

@@ -25,7 +25,7 @@ public abstract class Const
     public static int EGG_COST = 25;
 
     // Action quantity by turn
-    public static int MAX_FOOD_BY_TURN = 25;
+    public static int MAX_EAT_BY_TURN = 25;
     public static int MAX_STOCK_BY_TURN = 50;
     public static int MAX_GIFT_BY_TURN = 50;
 

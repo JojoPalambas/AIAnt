@@ -64,7 +64,6 @@ public abstract class Ant : MonoBehaviour
         this.teamColor = color;
 
         pastTurn = null;
-
         eventInputs = new List<EventInput>();
     }
 
