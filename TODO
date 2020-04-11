@@ -4,12 +4,13 @@
     [X] Each pheromone has a type and a team
     [X] At its turn, an ant has the list of all its team's pheromones in its cell and all the adjacent ones
     [X] At its turn, an ant has to return the new list of pheromones for the cell it was in at the beginning
-[ ] Make the GIVE action give food instead of energy
+[X] Make the GIVE action give food instead of energy
+[ ] Grow the sanctuaries
 [ ] Clean the error system
 [ ] Make the tornament system (X games, with a leaderboard at the end)
 [ ] Make the doc
 [ ] Check that no data can be touched from an AI
 [ ] Check all the bumps and eventInputs
 [ ] Raise food quantity and birth energy price
-[ ] Make the terrain hexagonal
+[X] Make the terrain hexagonal
 [ ] Make a more organic water and food generator

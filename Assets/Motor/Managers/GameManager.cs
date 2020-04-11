@@ -68,8 +68,8 @@ public class GameManager : MonoBehaviour
     private GameStatus status = GameStatus.THINKING;
 
     [Header("Terrain")]
-    public int terrainWidth;
-    public int terrainHeight;
+    public int terrainSideLength;
+    private int terrainLength;
     public Tile groundTilePrefab;
     public Tile waterTilePrefab;
     public Food foodPrefab;
@@ -124,14 +124,17 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         // If the map too small
-        if (terrainWidth < 4 || terrainHeight < 4)
+        if (terrainSideLength < 5)
             return;
+
+        // Just a convenient variable
+        terrainLength = 2 * terrainSideLength - 1;
 
         // Creates the protected tiles
         protectedTiles = new List<Vector2Int>();
         int index = 0;
 
-        for (int i = 0; i < aisToCompete.Count; i++)
+        for (int i = 0; i < Mathf.Min(aisToCompete.Count, Const.MAX_PLAYERS); i++)
         {
             switch (i)
             {
@@ -142,22 +145,10 @@ public class GameManager : MonoBehaviour
                     protectedTiles.Add(new Vector2Int(1, 1));
                     break;
                 case 1:
-                    protectedTiles.Add(new Vector2Int(terrainWidth - 1, terrainHeight - 1));
-                    protectedTiles.Add(new Vector2Int(terrainWidth - 2, terrainHeight - 1));
-                    protectedTiles.Add(new Vector2Int(terrainWidth - 1, terrainHeight - 2));
-                    protectedTiles.Add(new Vector2Int(terrainWidth - 2, terrainHeight - 2));
-                    break;
-                case 2:
-                    protectedTiles.Add(new Vector2Int(terrainWidth - 1, 0));
-                    protectedTiles.Add(new Vector2Int(terrainWidth - 2, 0));
-                    protectedTiles.Add(new Vector2Int(terrainWidth - 1, 1));
-                    protectedTiles.Add(new Vector2Int(terrainWidth - 2, 1));
-                    break;
-                case 3:
-                    protectedTiles.Add(new Vector2Int(0, terrainHeight - 1));
-                    protectedTiles.Add(new Vector2Int(1, terrainHeight - 1));
-                    protectedTiles.Add(new Vector2Int(0, terrainHeight - 2));
-                    protectedTiles.Add(new Vector2Int(1, terrainHeight - 2));
+                    protectedTiles.Add(new Vector2Int(terrainLength - 1, terrainLength - 1));
+                    protectedTiles.Add(new Vector2Int(terrainLength - 2, terrainLength - 1));
+                    protectedTiles.Add(new Vector2Int(terrainLength - 1, terrainLength - 2));
+                    protectedTiles.Add(new Vector2Int(terrainLength - 2, terrainLength - 2));
                     break;
                 default:
                     break;
@@ -165,41 +156,24 @@ public class GameManager : MonoBehaviour
         }
 
         // Fills the terrain with tiles
-        terrain = new TileContent[terrainWidth][];
+        terrain = new TileContent[terrainLength][];
         foods = new List<Food>();
-        for (int i = 0; i < terrainWidth; i++)
+        for (int i = 0; i < terrainLength; i++)
         {
-            terrain[i] = new TileContent[terrainHeight];
-            for (int j = 0; j < terrainHeight; j++)
+            terrain[i] = new TileContent[terrainLength];
+
+            for (int j = 0; j < terrainSideLength; j++)
             {
-                if (groundTilePrefab != null)
-                {
-                    Vector2 currentTilePosition = CoordConverter.HexToPos(new Vector2Int(i, j));
+                // The condition trucates a part of the map, to shape it like an hexagon
+                if (i < terrainSideLength + j)
+                    SpawnTerrainTile(i, j);
+            }
 
-                    float rand = Random.Range(0f, 1f);
-
-                    // Water is placed if the random number picked it AND the tile is not protected
-                    Tile newTile = null;
-                    Food newFood = null;
-                    if (!protectedTiles.Contains(new Vector2Int(i, j)) && rand < waterProbability)
-                    {
-                        newTile = Instantiate(waterTilePrefab, CoordConverter.PlanToWorld(currentTilePosition, waterTilePrefab.transform.position.y), waterTilePrefab.transform.rotation);
-                    }
-                    else
-                    {
-                        newTile = Instantiate(groundTilePrefab, CoordConverter.PlanToWorld(currentTilePosition, groundTilePrefab.transform.position.y), groundTilePrefab.transform.rotation);
-
-                        rand = Random.Range(0f, 1f);
-                        // Food is placed if the random number picked it AND the tile is not protected (AND the tile is not water)
-                        if (!protectedTiles.Contains(new Vector2Int(i, j)) && rand < foodProbability)
-                        {
-                            newFood = Instantiate(foodPrefab, CoordConverter.PlanToWorld(currentTilePosition, foodPrefab.transform.position.y), foodPrefab.transform.rotation);
-                            foods.Add(newFood);
-                        }
-                    }
-
-                    terrain[i][j] = new TileContent(newTile, newFood);
-                }
+            for (int j = terrainSideLength; j < terrainLength; j++)
+            {
+                // The condition trucates a part of the map, to shape it like an hexagon
+                if (i > j - terrainSideLength)
+                    SpawnTerrainTile(i, j);
             }
         }
 
@@ -208,6 +182,9 @@ public class GameManager : MonoBehaviour
         index = 0;
         foreach (AntAI ai in aisToCompete)
         {
+            if (index >= Const.MAX_PLAYERS)
+                break;
+
             Vector2Int queenPosition = new Vector2Int();
             switch (index)
             {
@@ -215,13 +192,7 @@ public class GameManager : MonoBehaviour
                     queenPosition = new Vector2Int(0, 0);
                     break;
                 case 1:
-                    queenPosition = new Vector2Int(terrainWidth - 1, terrainHeight - 1);
-                    break;
-                case 2:
-                    queenPosition = new Vector2Int(terrainWidth - 1, 0);
-                    break;
-                case 3:
-                    queenPosition = new Vector2Int(0, terrainHeight - 1);
+                    queenPosition = new Vector2Int(terrainLength - 1, terrainLength - 1);
                     break;
                 default:
                     queenPosition = new Vector2Int(0, 0);
@@ -246,20 +217,62 @@ public class GameManager : MonoBehaviour
         pheromoneMaps = new List<PheromoneDescriptor>[teams.Count][][];
         foreach (Team team in teams)
         {
-            List<PheromoneDescriptor>[][] pheromoneMap = new List<PheromoneDescriptor>[terrainWidth][];
+            List<PheromoneDescriptor>[][] pheromoneMap = new List<PheromoneDescriptor>[terrainLength][];
             pheromoneMaps[team.teamId] = pheromoneMap;
 
-            for (int i = 0; i < terrainWidth; i++)
+            for (int i = 0; i < terrainLength; i++)
             {
-                pheromoneMap[i] = new List<PheromoneDescriptor>[terrainHeight];
-                for (int j = 0; j < terrainHeight; j++)
+                pheromoneMap[i] = new List<PheromoneDescriptor>[terrainLength];
+
+                for (int j = 0; j < terrainSideLength; j++)
                 {
-                    pheromoneMap[i][j] = new List<PheromoneDescriptor>();
+                    // The condition trucates a part of the map, to shape it like an hexagon
+                    if (i < terrainSideLength + j)
+                        pheromoneMap[i][j] = new List<PheromoneDescriptor>();
+                }
+
+                for (int j = terrainSideLength; j < terrainLength; j++)
+                {
+                    // The condition trucates a part of the map, to shape it like an hexagon
+                    if (i > j - terrainSideLength)
+                        pheromoneMap[i][j] = new List<PheromoneDescriptor>();
                 }
             }
         }
 
-        pheromoneMapDisplayer.InitMap(teams, terrainWidth, terrainHeight);
+        pheromoneMapDisplayer.InitMap(teams, terrainLength, terrainLength);
+    }
+
+    private void SpawnTerrainTile(int i, int j)
+    {
+        if (groundTilePrefab != null)
+        {
+            Vector2 currentTilePosition = CoordConverter.HexToPos(new Vector2Int(i, j));
+
+            float rand = Random.Range(0f, 1f);
+
+            // Water is placed if the random number picked it AND the tile is not protected
+            Tile newTile = null;
+            Food newFood = null;
+            if (!protectedTiles.Contains(new Vector2Int(i, j)) && rand < waterProbability)
+            {
+                newTile = Instantiate(waterTilePrefab, CoordConverter.PlanToWorld(currentTilePosition, waterTilePrefab.transform.position.y), waterTilePrefab.transform.rotation);
+            }
+            else
+            {
+                newTile = Instantiate(groundTilePrefab, CoordConverter.PlanToWorld(currentTilePosition, groundTilePrefab.transform.position.y), groundTilePrefab.transform.rotation);
+
+                rand = Random.Range(0f, 1f);
+                // Food is placed if the random number picked it AND the tile is not protected (AND the tile is not water)
+                if (!protectedTiles.Contains(new Vector2Int(i, j)) && rand < foodProbability)
+                {
+                    newFood = Instantiate(foodPrefab, CoordConverter.PlanToWorld(currentTilePosition, foodPrefab.transform.position.y), foodPrefab.transform.rotation);
+                    foods.Add(newFood);
+                }
+            }
+
+            terrain[i][j] = new TileContent(newTile, newFood);
+        }
     }
 
     // Update is called once per frame
@@ -901,7 +914,7 @@ public class GameManager : MonoBehaviour
 
     private bool CheckCoordinatesValidity(Vector2Int coord)
     {
-        return coord.x >= 0 && coord.y >= 0 && coord.x < terrainWidth && coord.y < terrainHeight;
+        return coord.x >= 0 && coord.y >= 0 && coord.x < terrainLength && coord.y < terrainLength;
     }
 
     // Checks that a tile can be walked in

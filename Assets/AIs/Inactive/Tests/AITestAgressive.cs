@@ -83,6 +83,12 @@ public class AITestAgressive : AntAI
             }
         }
 
+        if (choice.type == ActionType.MOVE)
+        {
+            pheromones = new List<PheromoneDigest>();
+            pheromones.Add(new PheromoneDigest(PheromoneType.PHER0, choice.direction));
+        }
+
         return new Decision(mindset, choice, pheromones);
     }
 
