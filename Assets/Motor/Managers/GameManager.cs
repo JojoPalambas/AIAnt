@@ -301,7 +301,9 @@ public class GameManager : MonoBehaviour
                 winningTeams = CheckForWin();
 
                 if (winningTeams != null && winningTeams.Count > 0)
-                    break;
+                {
+
+                }
 
                 Think();
                 

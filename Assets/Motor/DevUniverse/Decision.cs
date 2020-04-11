@@ -16,12 +16,15 @@ public class Decision
     public Decision DeepCopyWithoutIsAllied()
     {
         List<PheromoneDigest> pheromonesCopy = new List<PheromoneDigest>();
-        foreach (PheromoneDigest pheromone in this.pheromones)
+        if (pheromones != null)
         {
-            if (pheromone != null)
-                pheromonesCopy.Add(new PheromoneDigest(pheromone.type, pheromone.direction));
-            else
-                pheromonesCopy.Add(null);
+            foreach (PheromoneDigest pheromone in this.pheromones)
+            {
+                if (pheromone != null)
+                    pheromonesCopy.Add(new PheromoneDigest(pheromone.type, pheromone.direction));
+                else
+                    pheromonesCopy.Add(null);
+            }
         }
 
         return new Decision(newMindset, choice != null ? choice.DeepCopy() : null, pheromonesCopy);
