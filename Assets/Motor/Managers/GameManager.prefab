@@ -53,6 +53,7 @@ MonoBehaviour:
     type: 3}
   waterProbability: 0.1
   foodProbability: 0.1
+  tornamentManager: {fileID: 0}
   queenPrefab: {fileID: -1403799128315622436, guid: 5a6ffe06489864f4d9672adae7146532,
     type: 3}
   workerPrefab: {fileID: 7627389938182149295, guid: 3256855cb81bc974ebdee8c98c522280,
@@ -62,6 +63,7 @@ MonoBehaviour:
   animationTime: 0
   rotationTime: 0
   pheromoneMapDisplayer: {fileID: 1905891281267833433}
+  epilogDuration: 5
 --- !u!114 &1905891281267833433
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -81,7 +83,7 @@ MonoBehaviour:
     teamId: 0
     enabled: 1
     color: {r: 1, g: 0, b: 0, a: 1}
-  - type: 1
-    teamId: 0
+  - type: 0
+    teamId: 1
     enabled: 1
-    color: {r: 1, g: 0.48850012, b: 0, a: 1}
+    color: {r: 0, g: 0, b: 1, a: 1}

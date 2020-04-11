@@ -7,7 +7,9 @@ public enum GameStatus
     ROTATING,
     ANIMATING,
     THINKING,
-    ACTING
+    ACTING,
+    CHECKING_VICTORY,
+    EPILOG
 }
 
 [System.Serializable]
@@ -81,6 +83,7 @@ public class GameManager : MonoBehaviour
     public float foodProbability;
 
     [Header("Gameplay")]
+    public TornamentManager tornamentManager;
     public Queen queenPrefab;
     public Worker workerPrefab;
     public Egg eggPrefab;
@@ -92,6 +95,7 @@ public class GameManager : MonoBehaviour
     public float rotationTime;
     private float currentAnimationTime;
     public PheromoneMapDisplayer pheromoneMapDisplayer;
+    public float epilogDuration;
     
     [System.NonSerialized] public List<Color> teamColors;
 
@@ -311,12 +315,6 @@ public class GameManager : MonoBehaviour
             case GameStatus.THINKING:
 
                 FixAllAnimations();
-                winningTeams = CheckForWin();
-
-                if (winningTeams != null && winningTeams.Count > 0)
-                {
-
-                }
 
                 Think();
                 
@@ -328,7 +326,32 @@ public class GameManager : MonoBehaviour
                 Act();
 
                 currentAnimationTime = rotationTime;
-                status = GameStatus.ROTATING;
+                status = GameStatus.CHECKING_VICTORY;
+                break;
+
+            case GameStatus.CHECKING_VICTORY:
+
+                winningTeams = CheckForWin();
+
+                if (winningTeams != null && winningTeams.Count > 0)
+                    status = GameStatus.EPILOG;
+                else
+                    status = GameStatus.ROTATING;
+
+                break;
+
+            case GameStatus.EPILOG:
+
+                epilogDuration -= Time.deltaTime;
+
+                if (epilogDuration <= 0)
+                {
+                    winningTeams = CheckForWin();
+
+                    tornamentManager.RegisterWinners(winningTeams);
+                    Die();
+                }
+
                 break;
 
             default:
@@ -420,6 +443,30 @@ public class GameManager : MonoBehaviour
 
     private List<Team> CheckForWin()
     {
+        if (teams.Count < 1)
+            return null;
+
+        if (teams.Count == 1)
+            return teams;
+
+        // If there has been too much time elapsed without concrete action
+        if (false)
+        {
+            List<Team> winners = new List<Team>();
+            foreach (Team team in teams)
+            {
+                if (team == null)
+                    continue;
+
+                // Additional security
+                if (team.queen == null)
+                    continue;
+
+                winners.Add(team);
+            }
+            return winners;
+        }
+
         return null;
     }
 
@@ -921,12 +968,11 @@ public class GameManager : MonoBehaviour
     private TurnError CheckWalkability(Vector2Int coord)
     {
         if (!CheckCoordinatesValidity(coord))
-            return TurnError.COLLISION_BOUNDS;
+            return TurnError.COLLISION_VOID;
 
         TileContent tileContent = terrain[coord.x][coord.y];
         if (tileContent == null)
         {
-            Debug.Log("Tile content does not exist at coordinates " + coord.ToString());
             return TurnError.COLLISION_VOID;
         }
         if (tileContent.ant != null)
@@ -949,12 +995,11 @@ public class GameManager : MonoBehaviour
     private TurnError CheckAttackability(Vector2Int coord, Ant attacker)
     {
         if (!CheckCoordinatesValidity(coord))
-            return TurnError.COLLISION_BOUNDS;
+            return TurnError.COLLISION_VOID;
 
         TileContent tileContent = terrain[coord.x][coord.y];
         if (tileContent == null)
         {
-            Debug.Log("Tile content does not exist at coordinates " + coord.ToString());
             return TurnError.COLLISION_VOID;
         }
 
@@ -970,12 +1015,11 @@ public class GameManager : MonoBehaviour
     private TurnError CheckGivability(Vector2Int coord, Ant giver)
     {
         if (!CheckCoordinatesValidity(coord))
-            return TurnError.COLLISION_BOUNDS;
+            return TurnError.COLLISION_VOID;
 
         TileContent tileContent = terrain[coord.x][coord.y];
         if (tileContent == null)
         {
-            Debug.Log("Tile content does not exist at coordinates " + coord.ToString());
             return TurnError.COLLISION_VOID;
         }
 
@@ -991,7 +1035,7 @@ public class GameManager : MonoBehaviour
     private TurnError CheckAnalyzability(Vector2Int coord)
     {
         if (!CheckCoordinatesValidity(coord))
-            return TurnError.COLLISION_BOUNDS;
+            return TurnError.COLLISION_VOID;
 
         return TurnError.NONE;
     }
@@ -1000,12 +1044,11 @@ public class GameManager : MonoBehaviour
     private TurnError CheckCommunicability(Vector2Int coord, Ant emitter)
     {
         if (!CheckCoordinatesValidity(coord))
-            return TurnError.COLLISION_BOUNDS;
+            return TurnError.COLLISION_VOID;
 
         TileContent tileContent = terrain[coord.x][coord.y];
         if (tileContent == null)
         {
-            Debug.Log("Tile content does not exist at coordinates " + coord.ToString());
             return TurnError.COLLISION_VOID;
         }
 
@@ -1021,12 +1064,11 @@ public class GameManager : MonoBehaviour
     private TurnError CheckEdibility(Vector2Int coord)
     {
         if (!CheckCoordinatesValidity(coord))
-            return TurnError.COLLISION_BOUNDS;
+            return TurnError.COLLISION_VOID;
 
         TileContent tileContent = terrain[coord.x][coord.y];
         if (tileContent == null)
         {
-            Debug.Log("Tile content does not exist at coordinates " + coord.ToString());
             return TurnError.COLLISION_VOID;
         }
 
@@ -1040,5 +1082,35 @@ public class GameManager : MonoBehaviour
         }
 
         return TurnError.NONE;
+    }
+
+    public void Die()
+    {
+        foreach (TileContent[] line in terrain)
+        {
+            foreach (TileContent tileContent in line)
+            {
+                if (tileContent == null)
+                    continue;
+
+                if (tileContent.tile != null)
+                    Destroy(tileContent.tile.gameObject);
+
+                if (tileContent.ant != null)
+                    tileContent.ant.Die();
+
+                if (tileContent.food != null)
+                    tileContent.food.Die();
+
+                if (tileContent.egg != null)
+                    tileContent.egg.Die();
+            }
+        }
+
+        // Dispose manually the pheromoneMaps, foods, aisToCompete, teams if needed
+
+        pheromoneMapDisplayer.Die();
+
+        Destroy(gameObject);
     }
 }

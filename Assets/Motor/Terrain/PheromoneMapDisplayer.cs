@@ -99,4 +99,21 @@ public class PheromoneMapDisplayer : MonoBehaviour
         }
         return NULL_COLOR;
     }
+
+    public void Die()
+    {
+        foreach (List<PheromoneDisplayer>[][] displayMap in displayMaps)
+        {
+            foreach (List<PheromoneDisplayer>[] displayLine in displayMap)
+            {
+                foreach (List<PheromoneDisplayer> displays in displayLine)
+                {
+                    foreach (PheromoneDisplayer display in displays)
+                    {
+                        display.Die();
+                    }
+                }
+            }
+        }
+    }
 }

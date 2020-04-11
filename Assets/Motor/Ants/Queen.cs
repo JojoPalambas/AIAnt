@@ -32,8 +32,6 @@ public class Queen : Ant
 
     public override void Die()
     {
-        Debug.Log("The queen has died!");
-
         SuperDie();
     }
 }

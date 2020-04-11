@@ -23,6 +23,7 @@ public class TornamentManager : MonoBehaviour
         ais.Add(new AITestAgressive());
 
         gameManager = Instantiate(gameManagerPrefab, transform);
+        gameManager.tornamentManager = this;
         gameManager.SetAIs(ais);
         gameManager.teamColors = colors;
     }
@@ -30,5 +31,17 @@ public class TornamentManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+    }
+
+    public void RegisterWinners(List<Team> teams)
+    {
+        string winnersString = "";
+        foreach (Team team in teams)
+            winnersString += team.teamId + " ";
+
+        if (teams.Count <= 1)
+            Debug.Log("Winner: " + winnersString);
+        else
+            Debug.Log("Winners: " + winnersString);
     }
 }

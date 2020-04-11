@@ -18,4 +18,9 @@ public class PheromoneDisplayer : MonoBehaviour
     {
         colorRenderer.material.SetColor("_Color", color);
     }
+
+    public void Die()
+    {
+        Destroy(gameObject);
+    }
 }
