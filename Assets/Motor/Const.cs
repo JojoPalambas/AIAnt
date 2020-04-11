@@ -5,7 +5,7 @@ using UnityEngine;
 public abstract class Const
 {
     // General
-    public static readonly int MAX_PLAYERS = 2;
+    public static readonly int MAX_PLAYERS = 6;
 
     // Queen stats
     public static readonly int QUEEN_STARTING_HP = 100;

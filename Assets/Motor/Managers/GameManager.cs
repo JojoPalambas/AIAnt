@@ -127,6 +127,8 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        terrainLength = 2 * terrainSideLength - 1;
+        BuildSanctuaries();
         // If the map too small
         if (terrainSideLength < 5)
             return;
@@ -138,25 +140,124 @@ public class GameManager : MonoBehaviour
         protectedTiles = new List<Vector2Int>();
         int index = 0;
 
-        for (int i = 0; i < Mathf.Min(aisToCompete.Count, Const.MAX_PLAYERS); i++)
+        // Stores the six corner sanctuaries of the map
+        Dictionary<HexDirection, List<Vector2Int>> possibleSanctuaries = BuildSanctuaries();
+
+        // Gives a starting position for each future queen and declares the protected tiles (cannot contain food or water)
+        List<Vector2Int> currSanct;
+        List<Vector2Int> queenPositions = new List<Vector2Int>();
+        switch (aisToCompete.Count)
         {
-            switch (i)
-            {
-                case 0:
-                    protectedTiles.Add(new Vector2Int(0, 0));
-                    protectedTiles.Add(new Vector2Int(1, 0));
-                    protectedTiles.Add(new Vector2Int(0, 1));
-                    protectedTiles.Add(new Vector2Int(1, 1));
-                    break;
-                case 1:
-                    protectedTiles.Add(new Vector2Int(terrainLength - 1, terrainLength - 1));
-                    protectedTiles.Add(new Vector2Int(terrainLength - 2, terrainLength - 1));
-                    protectedTiles.Add(new Vector2Int(terrainLength - 1, terrainLength - 2));
-                    protectedTiles.Add(new Vector2Int(terrainLength - 2, terrainLength - 2));
-                    break;
-                default:
-                    break;
-            }
+            case 1:
+
+                currSanct = possibleSanctuaries[HexDirection.UPLEFT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                break;
+
+            case 2:
+
+                currSanct = possibleSanctuaries[HexDirection.UPLEFT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                currSanct = possibleSanctuaries[HexDirection.DOWNRIGHT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                break;
+
+            case 3:
+
+                currSanct = possibleSanctuaries[HexDirection.UPLEFT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                currSanct = possibleSanctuaries[HexDirection.DOWNLEFT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                currSanct = possibleSanctuaries[HexDirection.RIGHT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                break;
+
+            case 4:
+
+                currSanct = possibleSanctuaries[HexDirection.UPLEFT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                currSanct = possibleSanctuaries[HexDirection.DOWNRIGHT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                currSanct = possibleSanctuaries[HexDirection.LEFT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                currSanct = possibleSanctuaries[HexDirection.RIGHT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                break;
+
+            case 5:
+
+                currSanct = possibleSanctuaries[HexDirection.UPLEFT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                currSanct = possibleSanctuaries[HexDirection.DOWNRIGHT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                currSanct = possibleSanctuaries[HexDirection.LEFT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                currSanct = possibleSanctuaries[HexDirection.RIGHT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                currSanct = possibleSanctuaries[HexDirection.DOWNLEFT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                break;
+
+            case 6:
+
+                currSanct = possibleSanctuaries[HexDirection.UPLEFT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                currSanct = possibleSanctuaries[HexDirection.DOWNRIGHT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                currSanct = possibleSanctuaries[HexDirection.LEFT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                currSanct = possibleSanctuaries[HexDirection.RIGHT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                currSanct = possibleSanctuaries[HexDirection.DOWNLEFT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                currSanct = possibleSanctuaries[HexDirection.UPRIGHT];
+                queenPositions.Add(currSanct[0]);
+                protectedTiles.AddRange(currSanct);
+
+                break;
+
+            default:
+                break;
         }
 
         // Fills the terrain with tiles
@@ -189,19 +290,7 @@ public class GameManager : MonoBehaviour
             if (index >= Const.MAX_PLAYERS)
                 break;
 
-            Vector2Int queenPosition = new Vector2Int();
-            switch (index)
-            {
-                case 0:
-                    queenPosition = new Vector2Int(0, 0);
-                    break;
-                case 1:
-                    queenPosition = new Vector2Int(terrainLength - 1, terrainLength - 1);
-                    break;
-                default:
-                    queenPosition = new Vector2Int(0, 0);
-                    break;
-            }
+            Vector2Int queenPosition = queenPositions[index];
 
             Vector3 queenWorldPosition = CoordConverter.PlanToWorld(CoordConverter.HexToPos(queenPosition), queenPrefab.transform.position.y);
             Queen newQueen = Instantiate(queenPrefab, queenWorldPosition, queenPrefab.transform.rotation);
@@ -245,6 +334,59 @@ public class GameManager : MonoBehaviour
         }
 
         pheromoneMapDisplayer.InitMap(teams, terrainLength, terrainLength);
+    }
+
+    // Builds the list of all the possible sanctuaries of the map (1 by corner) ; the first coordinates are those for the queens
+    private Dictionary<HexDirection, List<Vector2Int>> BuildSanctuaries()
+    {
+        Dictionary<HexDirection, List<Vector2Int>> sanctuaries = new Dictionary<HexDirection, List<Vector2Int>>();
+
+        List<Vector2Int> curSanct = null;
+
+        curSanct = new List<Vector2Int>();
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                curSanct.Add(new Vector2Int(i, j));
+        sanctuaries.Add(HexDirection.UPLEFT, curSanct);
+
+        curSanct = new List<Vector2Int>();
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                curSanct.Add(new Vector2Int(terrainSideLength - 1 - i + j, j));
+        sanctuaries.Add(HexDirection.UPRIGHT, curSanct);
+
+        curSanct = new List<Vector2Int>();
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                curSanct.Add(new Vector2Int(i + terrainSideLength - 1 - j, terrainLength - 1 - j));
+        sanctuaries.Add(HexDirection.DOWNLEFT, curSanct);
+
+        curSanct = new List<Vector2Int>();
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                curSanct.Add(new Vector2Int(terrainLength - 1 - i, terrainLength - 1 - j));
+        sanctuaries.Add(HexDirection.DOWNRIGHT, curSanct);
+
+        curSanct = new List<Vector2Int>();
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                curSanct.Add(new Vector2Int(i, terrainSideLength - 1 - j + i));
+        sanctuaries.Add(HexDirection.LEFT, curSanct);
+
+        curSanct = new List<Vector2Int>();
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                curSanct.Add(new Vector2Int(terrainLength - 1 - i, terrainSideLength - 1 - i + j));
+        sanctuaries.Add(HexDirection.RIGHT, curSanct);
+
+        foreach (KeyValuePair<HexDirection, List<Vector2Int>> entry in sanctuaries)
+        {
+            Logger.Info(entry.Key);
+            foreach (Vector2Int coord in entry.Value)
+                Logger.Info(coord);
+        }
+
+        return sanctuaries;
     }
 
     private void SpawnTerrainTile(int i, int j)
