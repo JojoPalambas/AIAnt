@@ -37,9 +37,6 @@ public class AITestPheromones : AntAI
         List<PheromoneDigest> pheromoneSignal = new List<PheromoneDigest>();
         for (int i = 0; i < Const.MAX_PHEROMONE_BY_CELL; i++)
             pheromoneSignal.Add(new PheromoneDigest(PheromoneType.PHER0, HexDirection.CENTER));
-        
-        if (info.pastTurn != null)
-            Logger.Info("QUEEN | " + info.pastTurn.error + " - " + info.carriedFood + " " + info.energy + " - " + choice.type + " " + choice.direction);
 
         return new Decision(AntMindset.AMS0, choice, pheromoneSignal);
     }

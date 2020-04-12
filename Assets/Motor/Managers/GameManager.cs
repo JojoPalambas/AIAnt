@@ -30,6 +30,8 @@ public class TileContent
 
 public class Team
 {
+    public readonly string aiId;
+
     public readonly int teamId;
     public AntAI ai;
 
@@ -39,8 +41,10 @@ public class Team
 
     public Color color;
 
-    public Team(int teamId, Queen queen, AntAI ai, Color color)
+    public Team(string aiId, int teamId, Queen queen, AntAI ai, Color color)
     {
+        this.aiId = aiId;
+
         this.teamId = teamId;
         this.ai = ai;
 
@@ -298,7 +302,7 @@ public class GameManager : MonoBehaviour
             terrain[queenPosition.x][queenPosition.y].ant = newQueen;
 
             Color teamColor = teamColors.Count > index ? teamColors[index] : new Color(255, 255, 255);
-            Team newTeam = new Team(index, newQueen, ai, teamColor);
+            Team newTeam = new Team(ai.GetType().ToString() + " - " + index, index, newQueen, ai, teamColor);
             teams.Add(newTeam);
 
             newQueen.Init(newTeam, queenPosition, teamColor);
@@ -332,6 +336,7 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
+        tornamentManager.InitLeaderboard(teams);
 
         pheromoneMapDisplayer.InitMap(teams, terrainLength, terrainLength);
     }
@@ -378,13 +383,6 @@ public class GameManager : MonoBehaviour
             for (int j = 0; j < 3; j++)
                 curSanct.Add(new Vector2Int(terrainLength - 1 - i, terrainSideLength - 1 - i + j));
         sanctuaries.Add(HexDirection.RIGHT, curSanct);
-
-        foreach (KeyValuePair<HexDirection, List<Vector2Int>> entry in sanctuaries)
-        {
-            Logger.Info(entry.Key);
-            foreach (Vector2Int coord in entry.Value)
-                Logger.Info(coord);
-        }
 
         return sanctuaries;
     }
@@ -475,7 +473,7 @@ public class GameManager : MonoBehaviour
 
                 winningTeams = CheckForWin();
 
-                if (winningTeams != null && winningTeams.Count > 0)
+                if (winningTeams != null)
                     status = GameStatus.EPILOG;
                 else
                     status = GameStatus.ROTATING;
@@ -586,7 +584,7 @@ public class GameManager : MonoBehaviour
     private List<Team> CheckForWin()
     {
         if (teams.Count < 1)
-            return null;
+            return teams;
 
         if (teams.Count == 1)
             return teams;
@@ -879,8 +877,6 @@ public class GameManager : MonoBehaviour
             int quantityToStockBack = quantityToEat - ant.UpdateEnergy(quantityToEat);
             ant.UpdateStock(quantityToStockBack);
 
-            Logger.Info(ant.Type + " HAS EATEN " + quantityToEat + " FROM SELF");
-
             return TurnError.NONE;
         }
 
@@ -968,8 +964,6 @@ public class GameManager : MonoBehaviour
         int quantityToGiveBack = quantityToGive - beneficiary.UpdateStock(quantityToGive);
         ant.UpdateStock(quantityToGiveBack);
 
-        Logger.Info(quantityToGive + " food has been given to " + beneficiary.Type);
-
         return TurnError.NONE;
     }
 
@@ -1053,7 +1047,7 @@ public class GameManager : MonoBehaviour
             if (terrain[target.x][target.y].food == null) { } // Leave everything like that
             else
             {
-                foodValue = ValueConverter.Convert(terrain[target.x][target.y].food.value);
+                foodValue = ValueConverter.Convert(terrain[target.x][target.y].food.value, Const.FOOD_SIZE);
             }
 
             egg = terrain[target.x][target.y].egg != null;
@@ -1114,9 +1108,7 @@ public class GameManager : MonoBehaviour
 
         TileContent tileContent = terrain[coord.x][coord.y];
         if (tileContent == null)
-        {
             return TurnError.COLLISION_VOID;
-        }
         if (tileContent.ant != null)
             return TurnError.COLLISION_ANT;
         if (tileContent.food != null)
@@ -1126,9 +1118,7 @@ public class GameManager : MonoBehaviour
         if (tileContent.tile == null)
             return TurnError.COLLISION_VOID;
         if (tileContent.tile.Type != TerrainType.GROUND)
-        {
             return TurnError.COLLISION_WATER;
-        }
 
         return TurnError.NONE;
     }
@@ -1141,10 +1131,7 @@ public class GameManager : MonoBehaviour
 
         TileContent tileContent = terrain[coord.x][coord.y];
         if (tileContent == null)
-        {
             return TurnError.COLLISION_VOID;
-        }
-
         if (tileContent.ant == null)
             return TurnError.NO_TARGET;
         if (tileContent.ant.team.teamId == attacker.team.teamId)
@@ -1161,9 +1148,7 @@ public class GameManager : MonoBehaviour
 
         TileContent tileContent = terrain[coord.x][coord.y];
         if (tileContent == null)
-        {
             return TurnError.COLLISION_VOID;
-        }
 
         if (tileContent.ant == null)
             return TurnError.NO_TARGET;
@@ -1217,11 +1202,13 @@ public class GameManager : MonoBehaviour
         if (tileContent.food == null)
             return TurnError.NO_TARGET;
         // Should never be triggred, but gives another security
+        /*
         if (tileContent.food.value <= 0)
         {
             tileContent.food.Die();
             return TurnError.NO_TARGET;
         }
+        */
 
         return TurnError.NONE;
     }

@@ -21,9 +21,9 @@ public abstract class Const
 
     // Action costs
     public static readonly int MOVE_COST = 0;
-    public static readonly int ATTACK_COST = 5;
+    public static readonly int ATTACK_COST = 0;
     public static readonly int GIVE_COST = 5;
-    public static readonly int EGG_COST = 25;
+    public static readonly int EGG_COST = 50;
 
     // Action quantity by turn
     public static readonly int MAX_EAT_BY_TURN = 25;
@@ -32,4 +32,5 @@ public abstract class Const
 
     // Other
     public static int MAX_PHEROMONE_BY_CELL = 4;
+    public static int FOOD_SIZE = 300;
 }

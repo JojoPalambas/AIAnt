@@ -12,7 +12,9 @@ public class Food : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        float displaySize = (float) value / 100;
+        value = Const.FOOD_SIZE;
+
+        float displaySize = (float) value / Const.FOOD_SIZE;
         displayObject.transform.localScale = new Vector3(displaySize, displaySize, displaySize);
 
         colorRenderer.material.SetFloat("_Offset", Random.Range(1f, 100f));
@@ -32,7 +34,7 @@ public class Food : MonoBehaviour
         float elapsedPercentage = elapsedTime / totalTime;
 
 
-        float displaySize = (float) value / 100;
+        float displaySize = (float) value / Const.FOOD_SIZE;
         Vector3 targetScale = new Vector3(displaySize, displaySize, displaySize);
 
         displayObject.transform.localScale = Vector3.Slerp(displayObject.transform.localScale, targetScale, elapsedPercentage);
@@ -44,7 +46,7 @@ public class Food : MonoBehaviour
             Die();
         else
         {
-            float displaySize = (float) Mathf.Max(value, 0) / 100;
+            float displaySize = (float) Mathf.Max(value, 0) / Const.FOOD_SIZE;
             displayObject.transform.localScale = new Vector3(displaySize, displaySize, displaySize);
         }
     }
@@ -53,8 +55,8 @@ public class Food : MonoBehaviour
     {
         if (quantity < 0)
             quantity = 0;
-        if (quantity > 100)
-            quantity = 100;
+        if (quantity > Const.FOOD_SIZE)
+            quantity = Const.FOOD_SIZE;
 
         value -= quantity;
         
@@ -65,6 +67,8 @@ public class Food : MonoBehaviour
             
             return ret;
         }
+
+        Logger.Info(value);
 
         return quantity;
     }

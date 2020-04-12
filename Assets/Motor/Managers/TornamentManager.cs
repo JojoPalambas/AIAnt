@@ -5,10 +5,12 @@ using UnityEngine;
 public class TornamentManager : MonoBehaviour
 {
     [Header("General")]
+    public int gamesToPlay;
     public GameManager gameManagerPrefab;
     private GameManager gameManager;
 
     private List<AntAI> ais;
+    private Dictionary<string, float> leaderBoard;
 
     [Header("Graphics")]
     public List<Color> colors;
@@ -17,11 +19,18 @@ public class TornamentManager : MonoBehaviour
     void Start()
     {
         ais = new List<AntAI>();
+        leaderBoard = new Dictionary<string, float>();
 
         // This is where the fighting AIs are set
-        ais.Add(new AITestAgressive());
-        ais.Add(new AITestAgressive());
+        ais.Add(new AITestPheromones());
+        ais.Add(new AITestPheromones());
 
+        Boot();
+    }
+
+    private void Boot()
+    {
+        gamesToPlay--;
         gameManager = Instantiate(gameManagerPrefab, transform);
         gameManager.tornamentManager = this;
         gameManager.SetAIs(ais);
@@ -31,17 +40,50 @@ public class TornamentManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (gameManager == null)
+        {
+            if (gamesToPlay > 0)
+            {
+                Boot();
+            }
+            else
+            {
+                Die();
+            }
+        }
+    }
+
+    public void InitLeaderboard(List<Team> teams)
+    {
+        foreach (Team team in teams)
+        {
+            if (!leaderBoard.ContainsKey(team.aiId))
+                leaderBoard.Add(team.aiId, 0);
+        }
     }
 
     public void RegisterWinners(List<Team> teams)
     {
-        string winnersString = "";
+        if (teams.Count <= 0)
+            Debug.Log("Perfect Tie, the several queens have died at the same time! No point is attributed.");
         foreach (Team team in teams)
-            winnersString += team.teamId + " ";
+        {
+            if (leaderBoard.ContainsKey(team.aiId))
+                leaderBoard[team.aiId] += 1 / teams.Count;
+            else
+                leaderBoard.Add(team.aiId, 1 / teams.Count);
+        }
+    }
 
-        if (teams.Count <= 1)
-            Debug.Log("Winner: " + winnersString);
-        else
-            Debug.Log("Winners: " + winnersString);
+    private void Die()
+    {
+        Debug.Log("The game has ended!");
+        Debug.Log("Leaderboard:");
+        foreach (KeyValuePair<string, float> score in leaderBoard)
+        {
+            Debug.Log(score.Key + " | " + score.Value);
+        }
+
+        Destroy(gameObject);
     }
 }

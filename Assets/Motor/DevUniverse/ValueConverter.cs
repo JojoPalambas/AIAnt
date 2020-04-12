@@ -15,4 +15,15 @@ public abstract class ValueConverter
 
         return Value.HIGH;
     }
+    public static Value Convert(int n, int max)
+    {
+        if (n <= 0)
+            return Value.NONE;
+        if (n <= max / 3)
+            return Value.LOW;
+        if (n <= 2 * max / 3)
+            return Value.MEDIUM;
+
+        return Value.HIGH;
+    }
 }

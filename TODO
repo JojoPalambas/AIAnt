@@ -5,12 +5,16 @@
     [X] At its turn, an ant has the list of all its team's pheromones in its cell and all the adjacent ones
     [X] At its turn, an ant has to return the new list of pheromones for the cell it was in at the beginning
 [X] Make the GIVE action give food instead of energy
-[ ] Grow the sanctuaries
-[ ] Clean the error system
-[ ] Make the tornament system (X games, with a leaderboard at the end)
+[X] Grow the sanctuaries
+[X] Clean the error system
+[X] Make the tornament system (X games, with a leaderboard at the end)
 [ ] Make the doc
 [ ] Check that no data can be touched from an AI
 [ ] Check all the bumps and eventInputs
-[ ] Raise food quantity and birth energy price
+[X] Raise food quantity and birth energy price
 [X] Make the terrain hexagonal
 [ ] Make a more organic water and food generator
+[X] Fix the tie freeze bug
+[X] Fix the "unattackable queen" bug (caused by lack of energy in the attacking ants)
+[ ] Randomize the ant order
+[ ] Add SmartLogger
