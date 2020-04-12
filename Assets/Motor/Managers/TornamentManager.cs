@@ -23,7 +23,7 @@ public class TornamentManager : MonoBehaviour
 
         // This is where the fighting AIs are set
         ais.Add(new AITestPheromones());
-        ais.Add(new AITestPheromones());
+        ais.Add(new AITestAgressive());
 
         Boot();
     }

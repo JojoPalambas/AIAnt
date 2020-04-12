@@ -32,5 +32,5 @@ public abstract class Const
 
     // Other
     public static int MAX_PHEROMONE_BY_CELL = 4;
-    public static int FOOD_SIZE = 300;
+    public static int FOOD_SIZE = 500;
 }

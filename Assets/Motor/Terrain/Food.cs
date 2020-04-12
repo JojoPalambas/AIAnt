@@ -68,8 +68,6 @@ public class Food : MonoBehaviour
             return ret;
         }
 
-        Logger.Info(value);
-
         return quantity;
     }
 

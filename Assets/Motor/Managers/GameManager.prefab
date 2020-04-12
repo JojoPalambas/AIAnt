@@ -52,7 +52,7 @@ MonoBehaviour:
   foodPrefab: {fileID: 769822011145848969, guid: 6e74088d5bbee0f4f9cfc48505b6598f,
     type: 3}
   waterProbability: 0.1
-  foodProbability: 0.1
+  foodProbability: 0.02
   tornamentManager: {fileID: 0}
   queenPrefab: {fileID: -1403799128315622436, guid: 5a6ffe06489864f4d9672adae7146532,
     type: 3}
@@ -60,8 +60,8 @@ MonoBehaviour:
     type: 3}
   eggPrefab: {fileID: 7815881630227739398, guid: 15024f516fabee346b9ebc5bcc7984cb,
     type: 3}
-  animationTime: 0.25
-  rotationTime: 0.25
+  animationTime: 0
+  rotationTime: 0
   pheromoneMapDisplayer: {fileID: 1905891281267833433}
   epilogDuration: 5
 --- !u!114 &1905891281267833433

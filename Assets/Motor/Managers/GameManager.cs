@@ -302,7 +302,7 @@ public class GameManager : MonoBehaviour
             terrain[queenPosition.x][queenPosition.y].ant = newQueen;
 
             Color teamColor = teamColors.Count > index ? teamColors[index] : new Color(255, 255, 255);
-            Team newTeam = new Team(ai.GetType().ToString() + " - " + index, index, newQueen, ai, teamColor);
+            Team newTeam = new Team(ai.GetType().ToString() + index, index, newQueen, ai, teamColor);
             teams.Add(newTeam);
 
             newQueen.Init(newTeam, queenPosition, teamColor);
@@ -874,7 +874,7 @@ public class GameManager : MonoBehaviour
             quantityToEat -= ant.UpdateStock(-quantityToEat);
 
             // Transforms the food to energy, then stock back the excess
-            int quantityToStockBack = quantityToEat - ant.UpdateEnergy(quantityToEat);
+            int quantityToStockBack = Mathf.Abs(ant.UpdateEnergy(quantityToEat));
             ant.UpdateStock(quantityToStockBack);
 
             return TurnError.NONE;
@@ -961,7 +961,7 @@ public class GameManager : MonoBehaviour
         quantityToGive -= ant.UpdateStock(-quantityToGive);
 
         // Give the energy to the beneficiary, then gives back the excess to the giver
-        int quantityToGiveBack = quantityToGive - beneficiary.UpdateStock(quantityToGive);
+        int quantityToGiveBack = Mathf.Abs(beneficiary.UpdateStock(quantityToGive));
         ant.UpdateStock(quantityToGiveBack);
 
         return TurnError.NONE;
