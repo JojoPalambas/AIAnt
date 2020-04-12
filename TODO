@@ -9,8 +9,8 @@
 [X] Clean the error system
 [X] Make the tornament system (X games, with a leaderboard at the end)
 [ ] Make the doc
-[ ] Check that no data can be touched from an AI
-[ ] Check all the bumps and eventInputs
+[X] Check that no data can be touched from an AI
+[X] Check all the bumps and eventInputs
 [X] Raise food quantity and birth energy price
 [X] Make the terrain hexagonal
 [ ] Make a more organic water and food generator

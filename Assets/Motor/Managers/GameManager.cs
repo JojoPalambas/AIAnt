@@ -93,6 +93,11 @@ public class GameManager : MonoBehaviour
     public Egg eggPrefab;
     public List<AntAI> aisToCompete;
     private List<Team> teams;
+    private List<Ant> randomOrderAntList;
+    private List<Ant> nextRandomOrderAntList;
+
+    private bool isPermanentModif;
+    private int roundsWithoutPermanentModif = 0;
 
     [Header("Animations")]
     public float animationTime;
@@ -131,8 +136,6 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        terrainLength = 2 * terrainSideLength - 1;
-        BuildSanctuaries();
         // If the map too small
         if (terrainSideLength < 5)
             return;
@@ -286,6 +289,8 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        nextRandomOrderAntList = new List<Ant>();
+
         // Instantiate the teams (number inferior or equal to 4)
         teams = new List<Team>();
         index = 0;
@@ -306,6 +311,8 @@ public class GameManager : MonoBehaviour
             teams.Add(newTeam);
 
             newQueen.Init(newTeam, queenPosition, teamColor);
+
+            InsertAntInNextRandomList(newQueen);
 
             index++;
         }
@@ -339,6 +346,18 @@ public class GameManager : MonoBehaviour
         tornamentManager.InitLeaderboard(teams);
 
         pheromoneMapDisplayer.InitMap(teams, terrainLength, terrainLength);
+    }
+
+    private void InsertAntInNextRandomList(Ant ant)
+    {
+
+        if (nextRandomOrderAntList == null)
+            nextRandomOrderAntList = new List<Ant>();
+
+        if (nextRandomOrderAntList.Count <= 0)
+            nextRandomOrderAntList.Add(ant);
+        else
+            nextRandomOrderAntList.Insert(Random.Range(0, nextRandomOrderAntList.Count), ant);
     }
 
     // Builds the list of all the possible sanctuaries of the map (1 by corner) ; the first coordinates are those for the queens
@@ -463,7 +482,13 @@ public class GameManager : MonoBehaviour
 
             case GameStatus.ACTING:
 
+                isPermanentModif = false;
                 Act();
+
+                if (!isPermanentModif)
+                    roundsWithoutPermanentModif++;
+                else
+                    roundsWithoutPermanentModif = 0;
 
                 currentAnimationTime = rotationTime;
                 status = GameStatus.CHECKING_VICTORY;
@@ -471,12 +496,13 @@ public class GameManager : MonoBehaviour
 
             case GameStatus.CHECKING_VICTORY:
 
-                winningTeams = CheckForWin();
-
-                if (winningTeams != null)
+                if (CheckForWin())
                     status = GameStatus.EPILOG;
                 else
                     status = GameStatus.ROTATING;
+
+                if (roundsWithoutPermanentModif > Const.MAX_TURNS_WITHOUT_PERMANENT_MODIF)
+                    status = GameStatus.EPILOG;
 
                 break;
 
@@ -486,9 +512,7 @@ public class GameManager : MonoBehaviour
 
                 if (epilogDuration <= 0)
                 {
-                    winningTeams = CheckForWin();
-
-                    tornamentManager.RegisterWinners(winningTeams);
+                    tornamentManager.RegisterWinners(teams);
                     Die();
                 }
 
@@ -581,33 +605,9 @@ public class GameManager : MonoBehaviour
         foods.RemoveAll(food => food == null);
     }
 
-    private List<Team> CheckForWin()
+    private bool CheckForWin()
     {
-        if (teams.Count < 1)
-            return teams;
-
-        if (teams.Count == 1)
-            return teams;
-
-        // If there has been too much time elapsed without concrete action
-        if (false)
-        {
-            List<Team> winners = new List<Team>();
-            foreach (Team team in teams)
-            {
-                if (team == null)
-                    continue;
-
-                // Additional security
-                if (team.queen == null)
-                    continue;
-
-                winners.Add(team);
-            }
-            return winners;
-        }
-
-        return null;
+        return teams.Count <= 1;
     }
 
     private void Think() // FIXME Factorize the two parts of this method
@@ -615,7 +615,7 @@ public class GameManager : MonoBehaviour
         foreach (Team team in teams)
         {
             MakeAntThink(team.queen, team.ai);
-
+            
             foreach (Worker worker in team.workers)
             {
                 MakeAntThink(worker, team.ai);
@@ -625,6 +625,9 @@ public class GameManager : MonoBehaviour
 
     private void MakeAntThink(Ant ant, AntAI ai)
     {
+        // Inserts the ant randomly in the next turn
+        InsertAntInNextRandomList(ant);
+
         // Gets all the pheromones on the current tile
         List<PheromoneDigest> pheromones = PheromoneDigest.ListFromDescriptorList(pheromoneMaps[ant.team.teamId][ant.gameCoordinates.x][ant.gameCoordinates.y]);
 
@@ -667,16 +670,19 @@ public class GameManager : MonoBehaviour
 
     private void Act()
     {
-        // Makes all the teams play
+        // Get the new turn order
+        randomOrderAntList = nextRandomOrderAntList;
+        nextRandomOrderAntList = new List<Ant>();
+
+        // Makes the queen and all the workers resolve their actions
+        foreach (Ant ant in randomOrderAntList)
+        {
+            ResolveDecision(ant);
+        }
+
+        // Manages the eggs of all the teams
         foreach (Team team in teams)
         {
-            // Makes the queen and all the workers resolve their actions
-            ResolveDecision(team.queen);
-            foreach (Worker worker in team.workers)
-            {
-                ResolveDecision(worker);
-            }
-
             // Makes all the eggs get older, and make the ready ones open
             List<int> emptyIndexes = new List<int>();
             for (int i = 0; i < team.eggs.Count; i++)
@@ -693,6 +699,8 @@ public class GameManager : MonoBehaviour
                     newWorker.Init(egg.team, egg.gameCoordinates, egg.team.color);
                     team.workers.Add(newWorker);
 
+                    InsertAntInNextRandomList(newWorker);
+
                     egg.Die();
                     team.eggs[i] = null;
                     emptyIndexes.Add(i);
@@ -706,6 +714,7 @@ public class GameManager : MonoBehaviour
                 team.eggs.RemoveAt(i);
             }
         }
+        // Check which teams have ended
         List<Team> finishedTeams = new List<Team>();
         foreach (Team team in teams)
         {
@@ -734,6 +743,9 @@ public class GameManager : MonoBehaviour
 
     private void ResolveDecision(Ant ant)
     {
+        // No resolution for ants that are just born
+        if (ant.decision == null)
+            return;
 
         // Placing the pheromones: the pheromones number check is made by the list-converting method
         pheromoneMaps[ant.team.teamId][ant.gameCoordinates.x][ant.gameCoordinates.y] = PheromoneDescriptor.ListFromDigestList(ant.decision.pheromones);
@@ -857,6 +869,8 @@ public class GameManager : MonoBehaviour
             victim.Die();
         }
 
+        isPermanentModif = true;
+
         return TurnError.NONE;
     }
 
@@ -899,6 +913,8 @@ public class GameManager : MonoBehaviour
         // The ant can eat more than it can store, so that it can remove food from the terrain if needed
         ant.UpdateEnergy(quantityToEat);
 
+        isPermanentModif = true;
+
         return TurnError.NONE;
     }
 
@@ -925,6 +941,8 @@ public class GameManager : MonoBehaviour
 
         // The ant can eat more than it can store, so that it can remove food from the terrain if needed
         ant.UpdateStock(quantityToStock);
+
+        isPermanentModif = true;
 
         return TurnError.NONE;
     }
@@ -1091,6 +1109,8 @@ public class GameManager : MonoBehaviour
 
         ant.team.eggs.Add(newEgg);
         terrain[eggCoord.x][eggCoord.y].egg = newEgg;
+
+        isPermanentModif = true;
 
         return TurnError.NONE;
     }

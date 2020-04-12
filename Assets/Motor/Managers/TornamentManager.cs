@@ -30,6 +30,10 @@ public class TornamentManager : MonoBehaviour
 
     private void Boot()
     {
+        Logger.Info("");
+        Logger.Info("========== NEW GAME");
+        Logger.Info("");
+
         gamesToPlay--;
         gameManager = Instantiate(gameManagerPrefab, transform);
         gameManager.tornamentManager = this;
@@ -64,20 +68,25 @@ public class TornamentManager : MonoBehaviour
 
     public void RegisterWinners(List<Team> teams)
     {
+        string winnersString = "";
+
         if (teams.Count <= 0)
             Debug.Log("Perfect Tie, the several queens have died at the same time! No point is attributed.");
         foreach (Team team in teams)
         {
+            winnersString += team.aiId + " ";
             if (leaderBoard.ContainsKey(team.aiId))
-                leaderBoard[team.aiId] += 1 / teams.Count;
+                leaderBoard[team.aiId] += 1f / teams.Count;
             else
-                leaderBoard.Add(team.aiId, 1 / teams.Count);
+                leaderBoard.Add(team.aiId, 1f / teams.Count);
         }
+
+        Debug.Log("The game has ended! Winners: " + winnersString);
     }
 
     private void Die()
     {
-        Debug.Log("The game has ended!");
+        Debug.Log("The tornament has ended!");
         Debug.Log("Leaderboard:");
         foreach (KeyValuePair<string, float> score in leaderBoard)
         {

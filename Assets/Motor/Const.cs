@@ -6,6 +6,7 @@ public abstract class Const
 {
     // General
     public static readonly int MAX_PLAYERS = 6;
+    public static readonly int MAX_TURNS_WITHOUT_PERMANENT_MODIF = 100;
 
     // Queen stats
     public static readonly int QUEEN_STARTING_HP = 100;
