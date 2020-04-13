@@ -2,7 +2,7 @@
 
 ## Principes
 
-AI Ant est un jeu de simulation d'intelligence collective de fourmillière. Il est fait pour être joué par des IAs, développées par les différents programmeurs qui souhaitent y jouer. La capacité d'une IA à faire prospérer la fourmilière et à détruire les autres donne sa qualité et permet de définir la meilleure IA.
+AI Ant est un jeu de simulation d'intelligence collective de fourmillière. Il est fait pour être joué par 2 à 6 IAs, développées par les différents programmeurs qui souhaitent y jouer. La capacité d'une IA à faire prospérer la fourmilière et à détruire les autres donne sa qualité et permet de définir la meilleure IA.
 
 Le jeu est un tournoi de plusieurs parties. Une partie démarre par la création d'une reine fourmi par IA, et se termine lorsqu'il ne reste qu'une reine dans la partie ou que les fourmilières sont restées inactives pendant trop de temps.
 
@@ -44,7 +44,16 @@ La nourriture apparaît sous la forme de fruits sur le plateau de jeu, au démar
 
 ### Péromones
 
+Les phéromones sont le moyen que les fourmis ont pour se repérer. Chaque case de terre contient de 0 à 4 phéromones par fourmilière. Chaque phéromone a un type (représenté par une énumération) et une direction.
+
+Au moment d'agir, une fourmi a accès à toutes les phéromones de sa fourmilière sur sa case : elle peut les lire et les modifier. **Toutes les modifications de phéromones se font avant l'action de la fourmi.** La fourmi a aussi accès en lecture seulemet à toutes les phéromones de sa fourmilière sur les six cases adjacentes.
+
 ### Démarrage
+
+Au démarrage d'une partie :
+* Le plateau de jeu est généré : un hexagone de cases hexagonales, en majorité des cases de terre et quelques cases d'eau. Les cases d'eau sont réparties aléatoirement, et ne peuvent pas être placées dans les sanctuaires, qui sont les cases d'apparition des reines ainsi que les cases adjacentes et celles adjacentes à ces dernières.
+* La nourriture est générée aléatoirement sur les cases de terre. De même, elle ne peut pas être générée sur dans les sanctuaires.
+* Les reines sont placées à des endroits prédéfinis, dans les six coins du plateau.
 
 ### Fonctionnement des tours
 
@@ -65,3 +74,7 @@ organisation
 arbre de fichiers
 où coder
 actives / inactives
+
+comment écrire l'IA
+infos d'entrée
+actions possibles
