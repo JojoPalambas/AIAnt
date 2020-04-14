@@ -8,7 +8,7 @@
 [X] Grow the sanctuaries
 [X] Clean the error system
 [X] Make the tornament system (X games, with a leaderboard at the end)
-[ ] Make the doc
+[X] Make the doc
 [X] Check that no data can be touched from an AI
 [X] Check all the bumps and eventInputs
 [X] Raise food quantity and birth energy price
@@ -17,4 +17,7 @@
 [X] Fix the tie freeze bug
 [X] Fix the "unattackable queen" bug (caused by lack of energy in the attacking ants)
 [X] Randomize the ant order
+[ ] Make a championship mode
+[ ] Give more HP to the queens
+
 [ ] Add SmartLogger
