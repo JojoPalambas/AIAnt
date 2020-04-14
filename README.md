@@ -4,7 +4,7 @@
 
 Pour être lancé, le projet doit simplement avoir été cloné et lancé avec Unity 2019.3.9f1, ou autre version compatible.
 
-Pour plus de sécurité, tout participant au concours doit éditer le .gitignore à la racine du projet en remplaçant son contenu par :
+Pour plus de sécurité, tout participant au concours doit créer le fichier .gitignore à la racine du projet en y écrivant :
 ```
 *
 
