@@ -1,5 +1,17 @@
 # AIAnt
 
+## Installation
+
+Pour être lancé, le projet doit simplement avoir été cloné et lancé avec Unity 2019.3.9f1, ou autre version compatible.
+
+Pour plus de sécurité, tout participant au concours doit éditer le .gitignore à la racine du projet en remplaçant son contenu par :
+```
+*
+
+!*AIPseudo*.cs
+```
+Pseudo doit être remplacé par le pseudo du joueur.
+
 ## Principes
 
 AI Ant est un jeu de simulation d'intelligence collective de fourmillière. Il est fait pour être joué par 2 à 6 IAs, développées par les différents programmeurs qui souhaitent y jouer. La capacité d'une IA à faire prospérer la fourmilière et à détruire les autres donne sa qualité et permet de définir la meilleure IA.
@@ -48,6 +60,8 @@ Les phéromones sont le moyen que les fourmis ont pour se repérer. Chaque case 
 
 Au moment d'agir, une fourmi a accès à toutes les phéromones de sa fourmilière sur sa case : elle peut les lire et les modifier. **Toutes les modifications de phéromones se font avant l'action de la fourmi.** La fourmi a aussi accès en lecture seulemet à toutes les phéromones de sa fourmilière sur les six cases adjacentes.
 
+## Déroulement
+
 ### Démarrage
 
 Au démarrage d'une partie :
@@ -55,26 +69,94 @@ Au démarrage d'une partie :
 * La nourriture est générée aléatoirement sur les cases de terre. De même, elle ne peut pas être générée sur dans les sanctuaires.
 * Les reines sont placées à des endroits prédéfinis, dans les six coins du plateau.
 
-### Fonctionnement des tours
+### Fonctionnement des rounds
+
+Un round est un tour de jeu pour l'ensemble des fourmis. Il est décomposé en deux parties :
+* Réflexion : Dans un ordre quelconque (aucune importance), les IAs sont appelées pour toutes les fourmis de toutes les fourmilières, pour qu'elles décident ce qu'elles vont faire à leur tour.
+* Action : chaque fourmi, **dans un ordre complètement aléatoire mélangeant tous les types de fourmis et toutes les fourmilières**, joue son tour :
+ * Elle dépose les phéromones qu'elle a prévu de déposer.
+ * Elle exécute l'action qu'elle a prévu de faire. L'action peut être impossible, ou même avoir été rendu impossible par l'action d'une autre fourmi ; dans ce cas-là, l'action n'a pas d'effet et la fourmi recevra une erreur.
+
+Les rounds s'exécutent ainsi jusqu'à la fin de la partie.
 
 ### Fin de partie
 
+La partie est arrêtée lorsqu'une des trois conditions suivantes sont remplies ; chaque condition attribue différemment les points, qui seront utilisés pour déterminer la meilleure IA :
+* Il ne reste plus aucune reine en jeu : le but étant avant tout de faire survivre la fourmilière, aucune IA ne gagne de point.
+* Il reste une seule reine en jeu : l'IA la contrôlant gagne 1 point.
+* Il reste plusieurs reines en jeu mais **aucune action irréversible n'a été effectuée durant une trop longue durée** : les IAs de toutes les reines encore en jeu se partagent 1 point. Une action irréversible est une des trois actions suivantes :
+ * Une fourmi en attaque une autre ;
+ * Une fourmi mange ;
+ * Une reine pond.
+
 ### Cycle de tournoi
-(et décompte des points)
 
-vainqueur (last alive, inactivity, full tie)
+Un tournoi est un ensemble de plusieurs parties qui s'enchaînent et dont les points des IAs s'accumulent.
 
-conditions de championnat
+**Dans un championnat, un tournoi fait 4 parties, oppose 2 IAs, et une IA doit finir avec 3 points pour battre l'autre.**
 
-types de fourmis
-plateau de jeu (hex à cases hex, contenu des cases)
+Il faut qu'on parle des autres paramètres du championnat.
 
-organisation
+## Organisation du code
 
-arbre de fichiers
-où coder
-actives / inactives
+Le code du projet est organisé comme suit :
+```
+- .gitignore
+- Assets
+  - AIs
+    - Active
+      - AIPseudo0Name.cs
+      - AIPseudo1Name.cs
+      - AIPseudo2Name.cs
+    - Inactive
+      - Pseudo0
+        - AIPseudo0Name0.cs
+        - AIPseudo0Name1.cs
+      - Pseudo1
+        - AIPseudo1Name0.cs
+      - Pseudo2
+        - AIPseudo2Name0.cs
+        - AIPseudo2Name1.cs
+        - AIPseudo2Name2.cs
+  - Motor
+    - Const.cs
+    - DevUniverse
+      - AnalyseReport.cs
+      - AntAI.cs
+      - ChoiceDescriptor.cs
+      - CommunicateReport.cs
+      - Decision.cs
+      - DirectionManip.cs
+      - Enums.cs
+      - EventInput.cs
+      - PastTurnDigest.cs
+      - PheromoneDigest.cs
+      - TurnInformation.cs
+      - ValueConverter.cs
+    - Logger.cs
+    - Managers
+      - GameManager.cs
+      - TornamentManager.cs
+- Logs.txt
+- README.md
+```
+Tous les fichiers et dossiers qui ne sont pas cités ici ne sont normalement pas importants pour coder une IA.
+
+### IAs
+
+Les IAs sont les seuls fichiers qui peuvent être modifiés par les joueurs.
+
+Toutes les IAs sont situées dans les sous-dossiers du dossier AI :
+* **Le dossier Active doit contenir une unique IA de chaque joueur**, qui est considérée comme sa meilleure IA, et l'IA à battre pour le battre.
+* Le dossier Inactive contient un sous-dossier par joueur, portant son pseudo en nom. Toutes ses IAs inactives seront stockées à l'intérieur.
+
+Le nommage des fichiers d'IA doit respecter le format **AIPseudoName.cs**, en remplaçant Pseudo par le pseudo de son créateur et Name par un nom personnalisé. De même, le nom de la classe de l'IA doit respecter le format **AIPseudoName**, avec le même pseudo et le même nom.
+
+### Moteur
 
 comment écrire l'IA
 infos d'entrée
 actions possibles
+
+settings
+logger
