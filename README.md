@@ -1,5 +1,17 @@
 # AIAnt
 
+## Installation
+
+Pour être lancé, le projet doit simplement avoir été cloné et lancé avec Unity 2019.3.9f1, ou autre version compatible.
+
+Pour plus de sécurité, tout participant au concours doit éditer le .gitignore à la racine du projet en remplaçant son contenu par :
+```
+*
+
+!*AIPseudo*.cs
+```
+Pseudo doit être remplacé par le pseudo du joueur.
+
 ## Principes
 
 AI Ant est un jeu de simulation d'intelligence collective de fourmillière. Il est fait pour être joué par 2 à 6 IAs, développées par les différents programmeurs qui souhaitent y jouer. La capacité d'une IA à faire prospérer la fourmilière et à détruire les autres donne sa qualité et permet de définir la meilleure IA.
@@ -130,11 +142,17 @@ Le code du projet est organisé comme suit :
 ```
 Tous les fichiers et dossiers qui ne sont pas cités ici ne sont normalement pas importants pour coder une IA.
 
-organisation
+### IAs
 
-arbre de fichiers
-où coder
-actives / inactives
+Les IAs sont les seuls fichiers qui peuvent être modifiés par les joueurs.
+
+Toutes les IAs sont situées dans les sous-dossiers du dossier AI :
+* **Le dossier Active doit contenir une unique IA de chaque joueur**, qui est considérée comme sa meilleure IA, et l'IA à battre pour le battre.
+* Le dossier Inactive contient un sous-dossier par joueur, portant son pseudo en nom. Toutes ses IAs inactives seront stockées à l'intérieur.
+
+Le nommage des fichiers d'IA doit respecter le format **AIPseudoName.cs**, en remplaçant Pseudo par le pseudo de son créateur et Name par un nom personnalisé. De même, le nom de la classe de l'IA doit respecter le format **AIPseudoName**, avec le même pseudo et le même nom.
+
+### Moteur
 
 comment écrire l'IA
 infos d'entrée
