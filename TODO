@@ -13,8 +13,8 @@
 [X] Check all the bumps and eventInputs
 [X] Raise food quantity and birth energy price
 [X] Make the terrain hexagonal
-[ ] Make a more organic water and food generator
+[X] Make a more organic water and food generator
 [X] Fix the tie freeze bug
 [X] Fix the "unattackable queen" bug (caused by lack of energy in the attacking ants)
-[ ] Randomize the ant order
+[X] Randomize the ant order
 [ ] Add SmartLogger

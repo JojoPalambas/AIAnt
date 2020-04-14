@@ -22,8 +22,8 @@ public class TornamentManager : MonoBehaviour
         leaderBoard = new Dictionary<string, float>();
 
         // This is where the fighting AIs are set
+        ais.Add(new AIJojoFirst());
         ais.Add(new AITestPheromones());
-        ais.Add(new AITestAgressive());
 
         Boot();
     }

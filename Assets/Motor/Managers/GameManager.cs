@@ -312,8 +312,6 @@ public class GameManager : MonoBehaviour
 
             newQueen.Init(newTeam, queenPosition, teamColor);
 
-            InsertAntInNextRandomList(newQueen);
-
             index++;
         }
 
@@ -350,7 +348,6 @@ public class GameManager : MonoBehaviour
 
     private void InsertAntInNextRandomList(Ant ant)
     {
-
         if (nextRandomOrderAntList == null)
             nextRandomOrderAntList = new List<Ant>();
 
@@ -441,6 +438,7 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Logger.Info(status);
         List<Team> winningTeams = null;
         switch (status)
         {
@@ -664,6 +662,11 @@ public class GameManager : MonoBehaviour
         else
             Debug.LogError("This ant has an unknown type!");
 
+        if (ant.decision == null)
+        {
+            ant.decision = new Decision(ant.mindset, ChoiceDescriptor.ChooseNone(), pheromones);
+        }
+
         ant.displayDirection = ant.decision.choice.direction;
         ant.ClearInputs(); // The inputs are flushed here so they can be filled up by the resolution of the actions
     }
@@ -698,8 +701,6 @@ public class GameManager : MonoBehaviour
                     terrain[egg.gameCoordinates.x][egg.gameCoordinates.y].ant = newWorker;
                     newWorker.Init(egg.team, egg.gameCoordinates, egg.team.color);
                     team.workers.Add(newWorker);
-
-                    InsertAntInNextRandomList(newWorker);
 
                     egg.Die();
                     team.eggs[i] = null;
@@ -743,6 +744,8 @@ public class GameManager : MonoBehaviour
 
     private void ResolveDecision(Ant ant)
     {
+        Logger.Info("Resolve " + ant.Type + " " + ant.GetInstanceID());
+
         // No resolution for ants that are just born
         if (ant.decision == null)
             return;
