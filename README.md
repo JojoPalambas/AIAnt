@@ -159,9 +159,38 @@ Le moteur contient aussi **le prefab du GameManager**, responsable de chaque par
 
 Enfin, le moteur contient **Const**, le fichier contenant toutes les constantes du jeu, et **Logger**, une classe dont les méthodes statiques Info, Warning et Error permettent un système de logs plus pratique à utiliser que celui de Unity.
 
-comment écrire l'IA
-infos d'entrée
+## Développement d'une IA
+
+### Création du fichier
+
+pull
+localisation
+nommage
+héritage
+
+### Concept de l'IA
+
+2 méthodes
+valeur de retour
+
+### Données en entrée
+
+contenu
+
+### Données en sortie
+
+contenu
 actions possibles
 
-settings
-logger
+### Tester l'IA
+
+TornamentManager
+couleurs des phéromones et autres settings
+Logger
+
+### Déployer l'IA
+
+active
+commit que le nécessaire
+pull
+push
