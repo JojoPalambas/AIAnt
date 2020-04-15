@@ -127,7 +127,7 @@ Le code du projet est organisé comme suit :
       - ValueConverter.cs
     - Logger.cs
     - Managers
-      - GameManager.cs
+      - GameManager.prefab
       - TornamentManager.cs
 - Logs.txt
 - README.md
@@ -144,7 +144,20 @@ Toutes les IAs sont situées dans les sous-dossiers du dossier AI :
 
 Le nommage des fichiers d'IA doit respecter le format **AIPseudoName.cs**, en remplaçant Pseudo par le pseudo de son créateur et Name par un nom personnalisé. De même, le nom de la classe de l'IA doit respecter le format **AIPseudoName**, avec le même pseudo et le même nom.
 
-### Moteur
+### Motor
+
+Le moteur est composé de beaucoup de fichiers sans intérêt pour les joueurs.
+
+Parmi les fichiers intéressants, il y a le dossier **DevUniverse**, contenant toutes les classes qui correspondent à des éléments de l'univers de jeu manipulés par le joueur, dont :
+* **AntAI**, la classe mère de toutes les IAs développées.
+* **ChoiceDescriptor** et **Decision**, les classes utilisées par les IAs pour formuler leurs réponses.
+* **DirectionManip**, une simple classe abstraite facilitant la manipulation des directions hexagonales (LEFT, UPLEFT, UPRIGHT, RIGHT, DOWNRIGHT, DOWNLEFT et CENTER).
+* **Enums**, déclarant toutes les énumérations.
+* **TurnInformation**, la grosse classe donnant à une IA toutes les informations dont elle a besoin pour réfléchir.
+
+Le moteur contient aussi **le prefab du GameManager**, responsable de chaque partie jouée, et dont les paramètres permettent de modifier la taille du plateau de jeu, la probabilité d'apparition de l'eau et de la nourriture, ainsi que la vitesse des animations. **TornamentManager**, lui, contient l'instantiation des IAs en début de partie, donc permet de régler quelles IAs jouent.
+
+Enfin, le moteur contient **Const**, le fichier contenant toutes les constantes du jeu, et **Logger**, une classe dont les méthodes statiques Info, Warning et Error permettent un système de logs plus pratique à utiliser que celui de Unity.
 
 comment écrire l'IA
 infos d'entrée
