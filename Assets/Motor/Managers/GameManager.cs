@@ -438,7 +438,6 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Logger.Info(status);
         List<Team> winningTeams = null;
         switch (status)
         {
@@ -744,8 +743,6 @@ public class GameManager : MonoBehaviour
 
     private void ResolveDecision(Ant ant)
     {
-        Logger.Info("Resolve " + ant.Type + " " + ant.GetInstanceID());
-
         // No resolution for ants that are just born
         if (ant.decision == null)
             return;

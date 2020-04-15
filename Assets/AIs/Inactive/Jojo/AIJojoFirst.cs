@@ -150,8 +150,6 @@ public class AIJojoFirst : AntAI
     // AMS0 (exploration): If the ant bumps into an enemy, it analyses it
     public override Decision OnWorkerTurn(TurnInformation info)
     {
-        Logger.Info("TURN " + info.id);
-
         AntMindset mindset = info.mindset;
         ChoiceDescriptor choice = ChoiceDescriptor.ChooseNone();
         List<PheromoneDigest> pheromones = info.pheromones;
@@ -214,7 +212,6 @@ public class AIJojoFirst : AntAI
             bool found = true;
             foreach (PheromoneDigest pheromone in pheromoneGroup.Value)
             {
-                Logger.Info(pheromone.type + " - " + pheromone.direction);
                 if (pheromone.type != PheromoneType.PHER3 || pheromone.direction != currentDirection)
                     found = false;
             }
