@@ -4,14 +4,6 @@
 
 Pour être lancé, le projet doit simplement avoir été cloné et lancé avec Unity 2019.3.9f1, ou autre version compatible.
 
-Pour plus de sécurité, tout participant au concours doit créer le fichier .gitignore à la racine du projet en y écrivant :
-```
-*
-
-!*AIPseudo*.cs
-```
-Pseudo doit être remplacé par le pseudo du joueur.
-
 ## Principes
 
 AI Ant est un jeu de simulation d'intelligence collective de fourmillière. Il est fait pour être joué par 2 à 6 IAs, développées par les différents programmeurs qui souhaitent y jouer. La capacité d'une IA à faire prospérer la fourmilière et à détruire les autres donne sa qualité et permet de définir la meilleure IA.
