@@ -182,7 +182,8 @@ La valeur de retour est un objet `Decision`, contenant une enum `mindset` (le mi
 En argument des méthodes `OnQueenTurn` et `OnWorkerTurn`, un objet `info` de type `TurnInformation`. Cet objet contient toutes les informations disponibles pour la fourmi, **qui ne doit donc pas chercher quoi que ce soit à l'extérieur** :
 * `terrainType` : une enum décrivant le type de terrain sur la case de la fourmi (en théorie, la valeur est toujours `TerrainType.GROUND`).
 * `pastTurn` : un objet contenant toutes les informations concernant le dernier tour de la fourmi :
-  * totor
+  * `error` : l'erreur reçue suite à l'action effectuée au tour précédent.
+  * `decision` : la décision prise au tour précédent (un objet `Decision` exactement comme celui retourné par `OnQueenTurn` et `OnWorkerTurn`)
 * `mindset` : une enum donnant le midset actuel de la fourmi ; c'est **la seule donnée fiable** qu'une fourmi porte sur elle (fiable, car les points de vie, l'énergie et la nourriture sont aussi portées par la fourmi, mais sont trop floues pour être utilisées comme bases de donnée).
 * `pheromones` : une liste de 0 à 4 `PheromoneDigest`, décrivant chacun une phéromone (ayant une enum de type et une direction) **sur la case de la fourmi**.
 * `adjacentPheromoneGroups`, un dictionnaire de `HexDirection` (donc une des six directions d'un hexagone) en clés et de listes de 0 à 4 phéromones en valeurs ; chaque entrée du dictionnaire (qui en a toujours 6) correspond à une direction et à toutes les phéromones sur la case adjacente dans cette direction.
@@ -195,11 +196,14 @@ En argument des méthodes `OnQueenTurn` et `OnWorkerTurn`, un objet `info` de ty
   * `foodValue` : une `Value` estimant la quantité de nourriture sur la case ; **attention, la quantité de nourriture sur une case peut dépasser 100** et la Value est calculée de 0 à la valeur max de nourriture par case, donnée dans le fichier `Const.cs`.
   * `pheromones` : la liste des phéromones de la case
 * `communicateReport` : un objet de rapport de communication, qui vaut `null` en temps normal mais qui se remplit lorsqu'une communication a été faite par la fourmi au tour précédent, avec succès :
-  * totor
+  * `type` : le type de la fourmi en face (enfin, celle avec laquelle la communication a été faite).
+  * `mindset` : le mindset de la fourmi en face.
+  * `energy`, `hp` et `carriedFood` : les valeurs interne de la fourmi en face.
+  * `word` : un mot communiqué par la fourmi en face, qui vaut toujours `AntWord.NONE` car c'est la fourmi en train de jouer qui a parlé à l'autre et pas l'inverse (**le `word` n'a une valeur que quand c'est une communication entrante, via les `eventInputs`**)
 * `eventInputs` : une liste d'objets `EventInputs` décrivant tout ce qui est arrivé à la fourmi entre le tour précédent et ce tour ; chaque `EventInput` contient la direction d'origine de l'input et le type de l'input :
   * `EventInputType.BUMP` si une fourmi a tenté de faire une action, mais a été bloquée par cette fourmi.
   * `EventInputType.ATTACK` si une fourmi a attaqué cette fourmi.
-  * `EventInputType.COMMUNICATE` si une fourmi a communiqué avec cette fourmi ; la fourmi reçoit alors dans cet `EventInput` toutes les informations de la communication sous la forme d'un objet `CommunicateReport` à l'intérieut de l'input.
+  * `EventInputType.COMMUNICATE` si une fourmi a communiqué avec cette fourmi ; la fourmi reçoit alors dans cet `EventInput` toutes les informations de la communication sous la forme d'un objet `CommunicateReport` à l'intérieut de l'input (**le `CommunicateReport` aura donc, dans ce cas-là, un `word`**).
 * `id` : un entier servant d'identifiant à la fourmi ; il n'a aucune utilité de gameplay, mais permet par exemple de suivre une fourmi au milieu de tous les affichages de debug que l'on fait.
 
 ### Données en sortie
