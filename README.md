@@ -163,19 +163,23 @@ Enfin, le moteur contient **Const**, le fichier contenant toutes les constantes 
 
 ### Création du fichier
 
-pull
-localisation
-nommage
-héritage
+Avant toute chose, il est important de `git pull` pour avoir les dernières mises à jour du moteur. Il est conseillé de récupérer ainsi les mises à jour de temps en temps.
+
+Le code peut être développé n'importe où, mais à la fin il devra être placé dans `AIs/Inactive/Pseudo/` ou `AIs/Active/`, il est donc conseillé d'y coder directement.
+
+Un fichier d'IA doit s'appeler `AIPseudoName.cs`, en remplaçant `Pseudo` par le pseudo de l'auteur et `Name` par un nom personnalisé.
+
+Une fois le fichier créé, il ne doit contenir qu'une unique classe, portant le nom du fichier (moins le `.cs` bien sûr). La classe **doit** hériter de la classe `AntAI`.
 
 ### Concept de l'IA
 
-2 méthodes
-valeur de retour
+Une IA est un ensemble de deux méthodes : `OnQueenTurn` et `OnWorkerTurn`. `OnQueenTurn` est appelée à chacun des tours de la reine pour lui faire choisir son action, et `OnWorkerTurn` est appelée à chacun des tours de chaque ouvrière pour lui faire choisir son action. les deux méthodes fonctionnent exactement de la même manière.
+
+La valeur de retour est un objet `Decision`, contenant une enum `mindset` (le mindset de la fourmi en sortant du tour), un `choice` décrivant l'action que la fourmi souhaite faire, et une liste de phéromones `pheromones`, décrivant l'état des phéromones sur la case de la fourmi, tel qu'elle doit le mettre en place, juste avant d'effectuer son action.
 
 ### Données en entrée
 
-contenu
+En argument des méthodes `OnQueenTurn` et `OnWorkerTurn`, un objet `info` de type `TurnInformation`
 
 ### Données en sortie
 
@@ -194,3 +198,10 @@ active
 commit que le nécessaire
 pull
 push
+
+## Interdits
+
+code moche
+données statiques
+tout échange avec l'extérieur
+regarder le code actif des autres
