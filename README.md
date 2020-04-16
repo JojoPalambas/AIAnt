@@ -187,7 +187,20 @@ En argument des méthodes `OnQueenTurn` et `OnWorkerTurn`, un objet `info` de ty
 * `pheromones` : une liste de 0 à 4 `PheromoneDigest`, décrivant chacun une phéromone (ayant une enum de type et une direction) **sur la case de la fourmi**.
 * `adjacentPheromoneGroups`, un dictionnaire de `HexDirection` (donc une des six directions d'un hexagone) en clés et de listes de 0 à 4 phéromones en valeurs ; chaque entrée du dictionnaire (qui en a toujours 6) correspond à une direction et à toutes les phéromones sur la case adjacente dans cette direction.
 * `energy`, `hp` et `carriedFood` : trois enum `Value` donnant les niveaux respectivement d'énergie, de points de vie et de nourriture transportée ; l'enum `Value` décrit une valeur entre 0 et 100 inclus, avec `Value.NONE` pour 0, `Value.LOW` de 1 à 33, `Value.MEDIUM` de 34 à 66 et `Value.HIGH` pour 67 et au-dessus.
-* 
+* `analyseReport` : un objet de rapport d'analyse, qui vaut `null` en temps normal mais qui se remplit lorsqu'une analyse a été faite par la fourmi au tour précédent, avec succès :
+  * `terrainType` : le type de tarrain sur la case.
+  * `antType` : le type de fourmi sur la case, qui vaut `AntType.None` s'il n'y a pas de fourmi.
+  * `egg` : un bolléen disant si la case contient un oeuf de fourmi.
+  * `isAllied` : un booléen disant si la fourmi ou l'oeuf de la case est de la même équipe que la fourmi.
+  * `foodValue` : une `Value` estimant la quantité de nourriture sur la case ; **attention, la quantité de nourriture sur une case peut dépasser 100** et la Value est calculée de 0 à la valeur max de nourriture par case, donnée dans le fichier `Const.cs`.
+  * `pheromones` : la liste des phéromones de la case
+* `communicateReport` : un objet de rapport de communication, qui vaut `null` en temps normal mais qui se remplit lorsqu'une communication a été faite par la fourmi au tour précédent, avec succès :
+  * totor
+* `eventInputs` : une liste d'objets `EventInputs` décrivant tout ce qui est arrivé à la fourmi entre le tour précédent et ce tour ; chaque `EventInput` contient la direction d'origine de l'input et le type de l'input :
+  * `EventInputType.BUMP` si une fourmi a tenté de faire une action, mais a été bloquée par cette fourmi.
+  * `EventInputType.ATTACK` si une fourmi a attaqué cette fourmi.
+  * `EventInputType.COMMUNICATE` si une fourmi a communiqué avec cette fourmi ; la fourmi reçoit alors dans cet `EventInput` toutes les informations de la communication sous la forme d'un objet `CommunicateReport` à l'intérieut de l'input.
+* `id` : un entier servant d'identifiant à la fourmi ; il n'a aucune utilité de gameplay, mais permet par exemple de suivre une fourmi au milieu de tous les affichages de debug que l'on fait.
 
 ### Données en sortie
 
