@@ -66,8 +66,8 @@ Au démarrage d'une partie :
 Un round est un tour de jeu pour l'ensemble des fourmis. Il est décomposé en deux parties :
 * Réflexion : Dans un ordre quelconque (aucune importance), les IAs sont appelées pour toutes les fourmis de toutes les fourmilières, pour qu'elles décident ce qu'elles vont faire à leur tour.
 * Action : chaque fourmi, **dans un ordre complètement aléatoire mélangeant tous les types de fourmis et toutes les fourmilières**, joue son tour :
- * Elle dépose les phéromones qu'elle a prévu de déposer.
- * Elle exécute l'action qu'elle a prévu de faire. L'action peut être impossible, ou même avoir été rendu impossible par l'action d'une autre fourmi ; dans ce cas-là, l'action n'a pas d'effet et la fourmi recevra une erreur.
+  * Elle dépose les phéromones qu'elle a prévu de déposer.
+  * Elle exécute l'action qu'elle a prévu de faire. L'action peut être impossible, ou même avoir été rendu impossible par l'action d'une autre fourmi ; dans ce cas-là, l'action n'a pas d'effet et la fourmi recevra une erreur.
 
 Les rounds s'exécutent ainsi jusqu'à la fin de la partie.
 
@@ -77,9 +77,9 @@ La partie est arrêtée lorsqu'une des trois conditions suivantes sont remplies 
 * Il ne reste plus aucune reine en jeu : le but étant avant tout de faire survivre la fourmilière, aucune IA ne gagne de point.
 * Il reste une seule reine en jeu : l'IA la contrôlant gagne 1 point.
 * Il reste plusieurs reines en jeu mais **aucune action irréversible n'a été effectuée durant une trop longue durée** : les IAs de toutes les reines encore en jeu se partagent 1 point. Une action irréversible est une des trois actions suivantes :
- * Une fourmi en attaque une autre ;
- * Une fourmi mange ;
- * Une reine pond.
+  * Une fourmi en attaque une autre ;
+  * Une fourmi mange ;
+  * Une reine pond.
 
 ### Cycle de tournoi
 
@@ -179,7 +179,15 @@ La valeur de retour est un objet `Decision`, contenant une enum `mindset` (le mi
 
 ### Données en entrée
 
-En argument des méthodes `OnQueenTurn` et `OnWorkerTurn`, un objet `info` de type `TurnInformation`
+En argument des méthodes `OnQueenTurn` et `OnWorkerTurn`, un objet `info` de type `TurnInformation`. Cet objet contient toutes les informations disponibles pour la fourmi, **qui ne doit donc pas chercher quoi que ce soit à l'extérieur** :
+* `terrainType` : une enum décrivant le type de terrain sur la case de la fourmi (en théorie, la valeur est toujours `TerrainType.GROUND`).
+* `pastTurn` : un objet contenant toutes les informations concernant le dernier tour de la fourmi :
+  * totor
+* `mindset` : une enum donnant le midset actuel de la fourmi ; c'est **la seule donnée fiable** qu'une fourmi porte sur elle (fiable, car les points de vie, l'énergie et la nourriture sont aussi portées par la fourmi, mais sont trop floues pour être utilisées comme bases de donnée).
+* `pheromones` : une liste de 0 à 4 `PheromoneDigest`, décrivant chacun une phéromone (ayant une enum de type et une direction) **sur la case de la fourmi**.
+* `adjacentPheromoneGroups`, un dictionnaire de `HexDirection` (donc une des six directions d'un hexagone) en clés et de listes de 0 à 4 phéromones en valeurs ; chaque entrée du dictionnaire (qui en a toujours 6) correspond à une direction et à toutes les phéromones sur la case adjacente dans cette direction.
+* `energy`, `hp` et `carriedFood` : trois enum `Value` donnant les niveaux respectivement d'énergie, de points de vie et de nourriture transportée ; l'enum `Value` décrit une valeur entre 0 et 100 inclus, avec `Value.NONE` pour 0, `Value.LOW` de 1 à 33, `Value.MEDIUM` de 34 à 66 et `Value.HIGH` pour 67 et au-dessus.
+* 
 
 ### Données en sortie
 
