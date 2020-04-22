@@ -208,8 +208,12 @@ En argument des méthodes `OnQueenTurn` et `OnWorkerTurn`, un objet `info` de ty
 
 ### Données en sortie
 
-contenu
-actions possibles
+Les méthodes `OnQueenTurn` et `OnWorkerTurn` retournent un objet `Decision`, décrivant leur action et tout ce qui va autour :
+* `newMindset` : le nouveau mindset de a fourmi (donc celui qu'elle aura au prochain tour), sous la forme d'une enum `AntMindset`
+* `choice` : un objet `ChoiceDescriptor` décrivant l'action effectuée par la fourmi ; cet objet peut être avantageusement généré par les méthodes statiques de `ChoiceDescriptor` (voir la section sur les actions)
+* `pheromones` : une `List<PheromoneDigest>` décrivant la nouvelle configuration des phéromones sur la case de la fourmi ; **cette configuration est faite juste avant l'action de la fourmi, sur la case de départ de la fourmi**
+
+### Actions possibles
 
 ### Tester l'IA
 
