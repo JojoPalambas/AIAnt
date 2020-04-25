@@ -899,7 +899,7 @@ public class GameManager : MonoBehaviour
         TurnError tileError = CheckEdibility(target);
         if (tileError != TurnError.NONE)
         {
-            if (tileError == TurnError.COLLISION_ANT)
+            if (tileError != TurnError.COLLISION_VOID && terrain[target.x][target.y].ant != null)
             {
                 terrain[target.x][target.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
             }
@@ -928,7 +928,7 @@ public class GameManager : MonoBehaviour
         TurnError tileError = CheckEdibility(target);
         if (tileError != TurnError.NONE)
         {
-            if (tileError == TurnError.COLLISION_ANT)
+            if (tileError != TurnError.COLLISION_VOID && terrain[target.x][target.y].ant != null)
             {
                 terrain[target.x][target.y].ant.eventInputs.Add(new EventInputBump(CoordConverter.InvertDirection(direction)));
             }
