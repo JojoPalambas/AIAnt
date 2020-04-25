@@ -219,10 +219,102 @@ Les méthodes `OnQueenTurn` et `OnWorkerTurn` retournent un objet `Decision`, d�
 
 La fourmi passe son tour. Il est à noter ça ne lui empêche pas de déposer des phéromones et de changer son mindset. La plupart du temps, une action None peut avantageusement être remplacée par une action `Analyse`ou `Communicate`, qui ne font pas non plus grand-chose et qui permettent à la fourmi d'avoir des informations supplémentaires.
 
-**Méthode de génération:** `ChoiceDescriptor.ChooseNone()`
-**Arguments:** aucun
-**Effets secondaires:** aucun
-**Erreurs possibles:**
+**Méthode de génération :** `ChoiceDescriptor.ChooseNone()`
+**Arguments :** aucun
+**Effets secondaires :** aucun
+**Erreurs possibles :**
+
+## `Move`
+
+La fourmi se déplace d'une case, dans une direction choisie.
+
+**Méthode de génération :** `ChoiceDescriptor.ChooseMove(HexDirection direction)`
+**Arguments :**
+* Direction : la direction dans laquelle la fourmi doit aller
+**Effets secondaires :**
+* Si le mouvement de la fourmi est bloqué par une autre fourmi, cette dernière reçoit un `BUMP` dans son `eventList`
+**Erreurs possibles :**
+
+## `Attack`
+
+La fourmi attaque dans la direction indiquée. La fourmi en face perd autant de points de vie que les dégâts de l'attaque, spécifiés dans `Const.cs`.
+
+**Méthode de génération :** `ChoiceDescriptor.ChooseAttack(HexDirection direction)`
+**Arguments :** aucun
+**Effets secondaires :** aucun
+**Erreurs possibles :**
+
+## `Eat`
+
+La fourmi mange une quantité indiquée en paramètre de nourriture contenue dans la case adjacente indiquée pour augmenter son énergie. Un point de nourriture donne un point d'énergie à la fourmi, qui ne paut pas avoir plus d'énergie que 100, et ne peut pas manger plus de nourriture en un tour que ce qui est indiqué dans `Const.cs`. Tout excès est laissé à la case contenant la nourriture.
+Par exemple :
+* Une case contient 130 de nourriture
+* Une fourmi essaie d'en manger 100
+* La limite de nourriture consommée par tour est de 30
+* La fourmi est déjà à 80 d'énergie
+* L'action fait que la fourmi mange 20 de nourriture pour passer à 100 d'énergie, et il reste 110 de nourriture à la case.
+
+**Méthode de génération :** `ChooseEat(HexDirection direction, int quantity)`
+**Arguments :** aucun
+**Effets secondaires :** aucun
+**Erreurs possibles :**
+
+## `Stock`
+
+La fourmi stocke une quantité indiquée en paramètre de nourriture contenue dans la case indiquée. Elle la stocke dans sa réserve de `carriedFood`, et ne peut pas en stocker plus que 100. Elle ne peut pas non plus stocker plus de nourriture en un tour que ce qui est indiqué dans `Const.cs`. Tout excès est laissé à la case contenant la nourriture.
+Par exemple :
+* Une case contient 130 de nourriture
+* Une fourmi essaie d'en stocker 100
+* La limite de nourriture consommée par tour est de 50
+* La fourmi est déjà à 70 de nourriture stockée
+* L'action fait que la fourmi stocke 30 de nourriture, et il reste 100 de nourriture à la case.
+
+**Méthode de génération :** `ChooseStock(HexDirection direction, int quantity)`
+**Arguments :** aucun
+**Effets secondaires :** aucun
+**Erreurs possibles :**
+
+## `Give`
+
+La fourmi donne à la fourmi dans la case indiquée une quantité indiquée en paramètre de nourriture. La nourriture ira dans la `carriedFood` de la fourmi bénéficiaire, qui ne peut pas dépasser 100, et bien sûr la donneuse ne peut donner que ce qu'elle a. De plus, une fourmi ne peut pas donner en un tour plus que ce qui est spécifié dans `Const.cs`. Tout excès est rendu à la donneuse.
+Par exemple :
+* Une fourmi A contient 80 de nourriture
+* Une fourmi B contient 70 de nourriture
+* A essaie de donner à B 100 de nourriture
+* La limite de don par tour est de 50
+* L'action fait que A passe à 50 de nourriture et B à 100
+
+**Méthode de génération :** `ChooseGive(HexDirection direction, int quantity)`
+**Arguments :** aucun
+**Effets secondaires :** aucun
+**Erreurs possibles :**
+
+## `None`
+
+La fourmi passe son tour. Il est à noter ça ne lui empêche pas de déposer des phéromones et de changer son mindset. La plupart du temps, une action None peut avantageusement être remplacée par une action `Analyse`ou `Communicate`, qui ne font pas non plus grand-chose et qui permettent à la fourmi d'avoir des informations supplémentaires.
+
+**Méthode de génération :** `ChoiceDescriptor.ChooseNone()`
+**Arguments :** aucun
+**Effets secondaires :** aucun
+**Erreurs possibles :**
+
+## `None`
+
+La fourmi passe son tour. Il est à noter ça ne lui empêche pas de déposer des phéromones et de changer son mindset. La plupart du temps, une action None peut avantageusement être remplacée par une action `Analyse`ou `Communicate`, qui ne font pas non plus grand-chose et qui permettent à la fourmi d'avoir des informations supplémentaires.
+
+**Méthode de génération :** `ChoiceDescriptor.ChooseNone()`
+**Arguments :** aucun
+**Effets secondaires :** aucun
+**Erreurs possibles :**
+
+## `None`
+
+La fourmi passe son tour. Il est à noter ça ne lui empêche pas de déposer des phéromones et de changer son mindset. La plupart du temps, une action None peut avantageusement être remplacée par une action `Analyse`ou `Communicate`, qui ne font pas non plus grand-chose et qui permettent à la fourmi d'avoir des informations supplémentaires.
+
+**Méthode de génération :** `ChoiceDescriptor.ChooseNone()`
+**Arguments :** aucun
+**Effets secondaires :** aucun
+**Erreurs possibles :**
 
 ### Tester l'IA
 
