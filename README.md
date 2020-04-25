@@ -335,7 +335,9 @@ Par exemple :
 * direction : la direction dans laquelle la fourmi doit donner
 * quantity : la quantité de nourriture que la fourmi doit essayer de donner
 
-**Effets secondaires :** aucun
+**Effets secondaires :**
+* Si l'action réussit, la fourmi bénéficiaire reçoit un `GIVE` dans son `eventList`
+* Si la case désignée contient une fourmi ennemie, cette dernière reçoit un `BUMP` dans son `eventList`
 
 **Erreurs possibles :**
 * `ILLEGAL` si la direction désignée est `CENTER`
@@ -343,6 +345,8 @@ Par exemple :
 * `COLLISION_VOID` si la case désignée est un trou (donc où il n'y a même pas de terrain)
 * `NO_TARGET` si la case désignée ne contient pas de fourmi
 * `NOT_ALLY` si la fourmi sur la case désignée n'est pas alliée
+* `NO_ENERGY` si le don coûte de l'énergie et que la fourmi n'en a pas assez
+* `NO_FOOD` si la fourmi n'a pas de nourriture à donner
 
 ## `Analyse`
 
@@ -353,9 +357,13 @@ La fourmi analyse la case indiquée, pour recevoir au tour suivant un `AnalyseRe
 **Arguments :**
 * direction : la direction dans laquelle la fourmi doit analyser
 
-**Effets secondaires :** aucun
+**Effets secondaires :**
+* Si la case analysée contient une fourmi, cette dernière reçoit un `BUMP` dans son `eventList`
 
 **Erreurs possibles :**
+* `ILLEGAL` si la direction désignée est `CENTER`
+* `COLLISION_VOID` si la direction désignée est en dehors des limites de la carte
+* `COLLISION_VOID` si la case désignée est un trou (donc où il n'y a même pas de terrain)
 
 ## `Communicate`
 
@@ -366,9 +374,17 @@ La fourmi communique avec la fourmi se trouvant sur la case adjacente indiquée.
 **Arguments :**
 * direction : la direction dans laquelle la fourmi doit communiquer
 
-**Effets secondaires :** aucun
+**Effets secondaires :**
+* Si l'action réussit, la fourmi cible reçoit un `COMMUNICATE` dans son `eventList`, contenant toutes les informations sur la fourmi émettrice et son mot d'ordre
+* Si la case désignée contient une fourmi ennemie, cette dernière reçoit un `BUMP` dans son `eventList`
 
 **Erreurs possibles :**
+* `ILLEGAL` si la direction désignée est `CENTER`
+* `COLLISION_VOID` si la direction désignée est en dehors des limites de la carte
+* `COLLISION_VOID` si la case désignée est un trou (donc où il n'y a même pas de terrain)
+* `NO_TARGET` si la case désignée ne contient pas de fourmi
+* `NOT_ALLY` si la fourmi sur la case désignée n'est pas alliée
+* `NO_ENERGY` si la communication coûte de l'énergie et que la fourmi n'en a pas assez
 
 ## `Egg`
 
@@ -379,9 +395,19 @@ La fourmi pond un oeuf dans la case adjacente indiquée. L'oeuf éclora plusieur
 **Arguments :**
 * direction : la direction dans laquelle la fourmi doit pondre un oeuf
 
-**Effets secondaires :** aucun
+**Effets secondaires :**
+* Si la pondaison est bloqué par une autre fourmi, cette dernière reçoit un `BUMP` dans son `eventList`
 
 **Erreurs possibles :**
+* `ILLEGAL` si la direction désignée est `CENTER`
+* `NOT_QUEEN` si l'action est commandée par une fourmi ouvrière plutôt que par la reine
+* `COLLISION_VOID` si la direction désignée est en dehors des limites de la carte
+* `COLLISION_VOID` si la case désignée est un trou (donc où il n'y a même pas de terrain)
+* `COLLISION_ANT` si la case est déjà occupée par une fourmi
+* `COLLISION_FOOD` si la case est occupée par de la nourriture
+* `COLLISION_EGG` si la case est occupée par un oeuf
+* `COLLISION_WATER` si la case est une case d'eau
+* `NO_ENERGY` si le moyvement co^te de l'énergie et que la fourmi n'en a plus assez
 
 ### Tester l'IA
 
