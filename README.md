@@ -220,29 +220,52 @@ Les méthodes `OnQueenTurn` et `OnWorkerTurn` retournent un objet `Decision`, d�
 La fourmi passe son tour. Il est à noter ça ne lui empêche pas de déposer des phéromones et de changer son mindset. La plupart du temps, une action None peut avantageusement être remplacée par une action `Analyse`ou `Communicate`, qui ne font pas non plus grand-chose et qui permettent à la fourmi d'avoir des informations supplémentaires.
 
 **Méthode de génération :** `ChoiceDescriptor.ChooseNone()`
+
 **Arguments :** aucun
+
 **Effets secondaires :** aucun
-**Erreurs possibles :**
+
+**Erreurs possibles :** aucune
 
 ## `Move`
 
 La fourmi se déplace d'une case, dans une direction choisie.
 
 **Méthode de génération :** `ChoiceDescriptor.ChooseMove(HexDirection direction)`
+
 **Arguments :**
-* Direction : la direction dans laquelle la fourmi doit aller
+* direction : la direction dans laquelle la fourmi doit aller
+
 **Effets secondaires :**
 * Si le mouvement de la fourmi est bloqué par une autre fourmi, cette dernière reçoit un `BUMP` dans son `eventList`
+
 **Erreurs possibles :**
+* `ILLEGAL` si la direction désignée est `CENTER`
+* `COLLISION_VOID` si la direction désignée est en dehors des limites de la carte
+* `COLLISION_VOID` si la case désignée est un trou (donc où il n'y a même pas de terrain)
+* `COLLISION_ANT` si la case est déjà occupée par une fourmi
+* `COLLISION_FOOD` si la case est occupée par de la nourriture
+* `COLLISION_EGG` si la case est occupée par un oeuf
+* `COLLISION_WATER` si la case est une case d'eau
+* `NO_ENERGY` si le moyvement co^te de l'énergie et que la fourmi n'en a plus assez
 
 ## `Attack`
 
 La fourmi attaque dans la direction indiquée. La fourmi en face perd autant de points de vie que les dégâts de l'attaque, spécifiés dans `Const.cs`.
 
 **Méthode de génération :** `ChoiceDescriptor.ChooseAttack(HexDirection direction)`
-**Arguments :** aucun
-**Effets secondaires :** aucun
+
+**Arguments :**
+* direction : la direction dans laquelle la fourmi doit attaquer
+
+**Effets secondaires :**
+* Si l'attaque a fonctionné, la victime reçoit un `ATTACK` dans son `eventList`
+
 **Erreurs possibles :**
+* `ILLEGAL` si la direction désignée est `CENTER`
+* `NO_TARGET` si la case désignée ne contient pas de fourmi
+* `NOT_ENEMY` si la case désignée contient une fourmi alliée (l'action est alors annulée)
+* `NO_ENERGY` si le moyvement co^te de l'énergie et que la fourmi n'en a plus assez
 
 ## `Eat`
 
@@ -254,10 +277,22 @@ Par exemple :
 * La fourmi est déjà à 80 d'énergie
 * L'action fait que la fourmi mange 20 de nourriture pour passer à 100 d'énergie, et il reste 110 de nourriture à la case.
 
-**Méthode de génération :** `ChooseEat(HexDirection direction, int quantity)`
-**Arguments :** aucun
-**Effets secondaires :** aucun
+Si une fourmi veut consommer so stock de nourriture (`carriedFood`), elle paut faire l'action en désignant la direction `CENTER`.
+
+**Méthode de génération :** `ChoiceDescriptor.ChooseEat(HexDirection direction, int quantity)`
+
+**Arguments :**
+* direction : la direction dans laquelle la fourmi doit manger
+* quantity : la quantité de nourriture que la fourmi doit essayer de manger
+
+**Effets secondaires :**
+* Si la case désignée est bloquée par une autre fourmi, cette dernière reçoit un `BUMP` dans son `eventList`
+
 **Erreurs possibles :**
+* `NO_FOOD` si la direction désignée est `CENTER` et que la fourmi n'a pas de `carriedFood`
+* `COLLISION_VOID` si la direction désignée est en dehors des limites de la carte
+* `COLLISION_VOID` si la case désignée est un trou (donc où il n'y a même pas de terrain)
+* `NO_TARGET` si la case désignée ne contient pas de nourriture
 
 ## `Stock`
 
@@ -269,10 +304,20 @@ Par exemple :
 * La fourmi est déjà à 70 de nourriture stockée
 * L'action fait que la fourmi stocke 30 de nourriture, et il reste 100 de nourriture à la case.
 
-**Méthode de génération :** `ChooseStock(HexDirection direction, int quantity)`
-**Arguments :** aucun
-**Effets secondaires :** aucun
+**Méthode de génération :** `ChoiceDescriptor.ChooseStock(HexDirection direction, int quantity)`
+
+**Arguments :**
+* direction : la direction depuis laquelle la fourmi doit stocker
+* quantity : la quantité de nourriture que la fourmi doit essayer de stocker
+
+**Effets secondaires :**
+* Si la case désignée est bloquée par une autre fourmi, cette dernière reçoit un `BUMP` dans son `eventList`
+
 **Erreurs possibles :**
+* `ILLEGAL` si la direction désignée est `CENTER`
+* `COLLISION_VOID` si la direction désignée est en dehors des limites de la carte
+* `COLLISION_VOID` si la case désignée est un trou (donc où il n'y a même pas de terrain)
+* `NO_TARGET` si la case désignée ne contient pas de nourriture
 
 ## `Give`
 
@@ -284,36 +329,58 @@ Par exemple :
 * La limite de don par tour est de 50
 * L'action fait que A passe à 50 de nourriture et B à 100
 
-**Méthode de génération :** `ChooseGive(HexDirection direction, int quantity)`
-**Arguments :** aucun
+**Méthode de génération :** `ChoiceDescriptor.ChooseGive(HexDirection direction, int quantity)`
+
+**Arguments :**
+* direction : la direction dans laquelle la fourmi doit donner
+* quantity : la quantité de nourriture que la fourmi doit essayer de donner
+
 **Effets secondaires :** aucun
+
+**Erreurs possibles :**
+* `ILLEGAL` si la direction désignée est `CENTER`
+* `COLLISION_VOID` si la direction désignée est en dehors des limites de la carte
+* `COLLISION_VOID` si la case désignée est un trou (donc où il n'y a même pas de terrain)
+* `NO_TARGET` si la case désignée ne contient pas de fourmi
+* `NOT_ALLY` si la fourmi sur la case désignée n'est pas alliée
+
+## `Analyse`
+
+La fourmi analyse la case indiquée, pour recevoir au tour suivant un `AnalyseReport` (voir la section des données en entrée) décrivant la case pointée. C'est utile notamment pour déterminer si une fourmi adverse est reine ou pour estimer une quantité de nourriture.
+
+**Méthode de génération :** `ChoiceDescriptor.ChooseAnalyse(HexDirection direction)`
+
+**Arguments :**
+* direction : la direction dans laquelle la fourmi doit analyser
+
+**Effets secondaires :** aucun
+
 **Erreurs possibles :**
 
-## `None`
+## `Communicate`
 
-La fourmi passe son tour. Il est à noter ça ne lui empêche pas de déposer des phéromones et de changer son mindset. La plupart du temps, une action None peut avantageusement être remplacée par une action `Analyse`ou `Communicate`, qui ne font pas non plus grand-chose et qui permettent à la fourmi d'avoir des informations supplémentaires.
+La fourmi communique avec la fourmi se trouvant sur la case adjacente indiquée. La fourmi dont c'est le tour recevra au tour suivant un `CommunicateReport` donnant les informations de la fourmi ciblée, et la fourmi ciblée recevra dans ses `eventInputs` un input contenant les information de l'émettrice, ainsi que le mot d'ordre indiqué en paramètre.
 
-**Méthode de génération :** `ChoiceDescriptor.ChooseNone()`
-**Arguments :** aucun
+**Méthode de génération :** `ChoiceDescriptor.ChooseCommunicate(HexDirection direction, AntWord word)`
+
+**Arguments :**
+* direction : la direction dans laquelle la fourmi doit communiquer
+
 **Effets secondaires :** aucun
+
 **Erreurs possibles :**
 
-## `None`
+## `Egg`
 
-La fourmi passe son tour. Il est à noter ça ne lui empêche pas de déposer des phéromones et de changer son mindset. La plupart du temps, une action None peut avantageusement être remplacée par une action `Analyse`ou `Communicate`, qui ne font pas non plus grand-chose et qui permettent à la fourmi d'avoir des informations supplémentaires.
+La fourmi pond un oeuf dans la case adjacente indiquée. L'oeuf éclora plusieurs tours plus tard. Cette action ne peut fonctionner que si la fourmi est reine.
 
-**Méthode de génération :** `ChoiceDescriptor.ChooseNone()`
-**Arguments :** aucun
+**Méthode de génération :** `ChoiceDescriptor.ChooseEgg(HexDirection direction)`
+
+**Arguments :**
+* direction : la direction dans laquelle la fourmi doit pondre un oeuf
+
 **Effets secondaires :** aucun
-**Erreurs possibles :**
 
-## `None`
-
-La fourmi passe son tour. Il est à noter ça ne lui empêche pas de déposer des phéromones et de changer son mindset. La plupart du temps, une action None peut avantageusement être remplacée par une action `Analyse`ou `Communicate`, qui ne font pas non plus grand-chose et qui permettent à la fourmi d'avoir des informations supplémentaires.
-
-**Méthode de génération :** `ChoiceDescriptor.ChooseNone()`
-**Arguments :** aucun
-**Effets secondaires :** aucun
 **Erreurs possibles :**
 
 ### Tester l'IA
