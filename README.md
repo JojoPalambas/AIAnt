@@ -215,6 +215,15 @@ Les méthodes `OnQueenTurn` et `OnWorkerTurn` retournent un objet `Decision`, d�
 
 ### Actions possibles
 
+## `None`
+
+La fourmi passe son tour. Il est à noter ça ne lui empêche pas de déposer des phéromones et de changer son mindset. La plupart du temps, une action None peut avantageusement être remplacée par une action `Analyse`ou `Communicate`, qui ne font pas non plus grand-chose et qui permettent à la fourmi d'avoir des informations supplémentaires.
+
+**Méthode de génération:** `ChoiceDescriptor.ChooseNone()`
+**Arguments:** aucun
+**Effets secondaires:** aucun
+**Erreurs possibles:**
+
 ### Tester l'IA
 
 TornamentManager
