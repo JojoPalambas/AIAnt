@@ -411,20 +411,20 @@ La fourmi pond un oeuf dans la case adjacente indiquée. L'oeuf éclora plusieur
 
 ### Tester l'IA
 
-TornamentManager
-couleurs des phéromones et autres settings
-Logger
+Pour utiliser l'IA, elle doit être instanciée à l'endroit indiqué dans le `TornamentManager`. Il ne peut pas y avoir moins de 2 IAs u plus de 6 IAs.
+
+Les couleurs d'affichage des phéromones peuvent être réglées dans le GameObject TornamentManager, trouvable dans la hiérarchie de la scène sur Unity. Les autres paramètres sont modifiables dans le préfabriqué de GameManager.
+
+Une classe `Logger` permet d'enregistrer de grandes quantités de logs dans le fichier `Logs.txt`. Pour cela, il suffit d'utiliser les méthodes statiques `Logger.Info`, `Logger.Warning` et `Logger.Error`. Cette classe ne permet pas d'avoir les logs en diret, mais d'afficher bien plus de logs que la console Unity classique.
 
 ### Déployer l'IA
 
-active
-commit que le nécessaire
-pull
-push
+Avant de déployer l'IA, il faut placer son fichier dans le dossier `Active`, et enlever sa précédente IA pour la mettre dans `Inactive/<pseudo>`, car **il ne doit y avoir qu'une seule IA active par développer à tout instant**.
+
+Ensuite, à l'aide de Git, il faut `add` et `commit` **uniquement le travail sur ses IAs**. Aucune modification du moteur (y compris le `TornamentManager`) ou des IAs des autres joueurs. Ensuite, il faut `pull` pour s'assurer que tourne bien avec la dernière version du moteur (et faire des modifications si besoin est), puis `push`.
 
 ## Interdits
 
-code moche
-données statiques
-tout échange avec l'extérieur
-regarder le code actif des autres
+Sachant que tout dev peut regarder le code inactif des autres devs, il est interdit de rendre son code volontairement illisiible. De plus, il est interdit de regarder le code actif d'un autre dev.
+
+Il est interdit de stocker des données statiques, ou toute donnée extérieure aux portées des méthodes `OnQueenTurn` et `OnPlayerTurn`. La seule communication avec l'extérieur de ces portées se fait par les paramètrzs des méthodes et leurs valeurs de retour.
