@@ -101,7 +101,7 @@ public class TornamentManager : MonoBehaviour
         Logger.Flush();
     }
 
-    private void OnApplicationQuit(bool pause)
+    private void OnApplicationQuit()
     {
         Logger.Flush();
     }
