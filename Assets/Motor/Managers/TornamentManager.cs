@@ -23,7 +23,7 @@ public class TornamentManager : MonoBehaviour
 
         // This is where the fighting AIs are set
         ais.Add(new AIJojoFirst());
-        ais.Add(new AITestPheromones());
+        ais.Add(new AITestNone());
 
         Boot();
     }
@@ -94,5 +94,15 @@ public class TornamentManager : MonoBehaviour
         }
 
         Destroy(gameObject);
+    }
+
+    private void OnApplicationPause(bool pause)
+    {
+        Logger.Flush();
+    }
+
+    private void OnApplicationQuit(bool pause)
+    {
+        Logger.Flush();
     }
 }
