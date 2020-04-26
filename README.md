@@ -66,8 +66,8 @@ Au démarrage d'une partie :
 Un round est un tour de jeu pour l'ensemble des fourmis. Il est décomposé en deux parties :
 * Réflexion : Dans un ordre quelconque (aucune importance), les IAs sont appelées pour toutes les fourmis de toutes les fourmilières, pour qu'elles décident ce qu'elles vont faire à leur tour.
 * Action : chaque fourmi, **dans un ordre complètement aléatoire mélangeant tous les types de fourmis et toutes les fourmilières**, joue son tour :
- * Elle dépose les phéromones qu'elle a prévu de déposer.
- * Elle exécute l'action qu'elle a prévu de faire. L'action peut être impossible, ou même avoir été rendu impossible par l'action d'une autre fourmi ; dans ce cas-là, l'action n'a pas d'effet et la fourmi recevra une erreur.
+  * Elle dépose les phéromones qu'elle a prévu de déposer.
+  * Elle exécute l'action qu'elle a prévu de faire. L'action peut être impossible, ou même avoir été rendu impossible par l'action d'une autre fourmi ; dans ce cas-là, l'action n'a pas d'effet et la fourmi recevra une erreur.
 
 Les rounds s'exécutent ainsi jusqu'à la fin de la partie.
 
@@ -77,9 +77,9 @@ La partie est arrêtée lorsqu'une des trois conditions suivantes sont remplies 
 * Il ne reste plus aucune reine en jeu : le but étant avant tout de faire survivre la fourmilière, aucune IA ne gagne de point.
 * Il reste une seule reine en jeu : l'IA la contrôlant gagne 1 point.
 * Il reste plusieurs reines en jeu mais **aucune action irréversible n'a été effectuée durant une trop longue durée** : les IAs de toutes les reines encore en jeu se partagent 1 point. Une action irréversible est une des trois actions suivantes :
- * Une fourmi en attaque une autre ;
- * Une fourmi mange ;
- * Une reine pond.
+  * Une fourmi en attaque une autre ;
+  * Une fourmi mange ;
+  * Une reine pond.
 
 ### Cycle de tournoi
 
@@ -159,9 +159,272 @@ Le moteur contient aussi **le prefab du GameManager**, responsable de chaque par
 
 Enfin, le moteur contient **Const**, le fichier contenant toutes les constantes du jeu, et **Logger**, une classe dont les méthodes statiques Info, Warning et Error permettent un système de logs plus pratique à utiliser que celui de Unity.
 
-comment écrire l'IA
-infos d'entrée
-actions possibles
+## Développement d'une IA
 
-settings
-logger
+### Création du fichier
+
+Avant toute chose, il est important de `git pull` pour avoir les dernières mises à jour du moteur. Il est conseillé de récupérer ainsi les mises à jour de temps en temps.
+
+Le code peut être développé n'importe où, mais à la fin il devra être placé dans `AIs/Inactive/Pseudo/` ou `AIs/Active/`, il est donc conseillé d'y coder directement.
+
+Un fichier d'IA doit s'appeler `AIPseudoName.cs`, en remplaçant `Pseudo` par le pseudo de l'auteur et `Name` par un nom personnalisé.
+
+Une fois le fichier créé, il ne doit contenir qu'une unique classe, portant le nom du fichier (moins le `.cs` bien sûr). La classe **doit** hériter de la classe `AntAI`.
+
+### Concept de l'IA
+
+Une IA est un ensemble de deux méthodes : `OnQueenTurn` et `OnWorkerTurn`. `OnQueenTurn` est appelée à chacun des tours de la reine pour lui faire choisir son action, et `OnWorkerTurn` est appelée à chacun des tours de chaque ouvrière pour lui faire choisir son action. les deux méthodes fonctionnent exactement de la même manière.
+
+La valeur de retour est un objet `Decision`, contenant une enum `mindset` (le mindset de la fourmi en sortant du tour), un `choice` décrivant l'action que la fourmi souhaite faire, et une liste de phéromones `pheromones`, décrivant l'état des phéromones sur la case de la fourmi, tel qu'elle doit le mettre en place, juste avant d'effectuer son action.
+
+### Données en entrée
+
+En argument des méthodes `OnQueenTurn` et `OnWorkerTurn`, un objet `info` de type `TurnInformation`. Cet objet contient toutes les informations disponibles pour la fourmi, **qui ne doit donc pas chercher quoi que ce soit à l'extérieur** :
+* `terrainType` : une enum décrivant le type de terrain sur la case de la fourmi (en théorie, la valeur est toujours `TerrainType.GROUND`).
+* `pastTurn` : un objet contenant toutes les informations concernant le dernier tour de la fourmi :
+  * `error` : l'erreur reçue suite à l'action effectuée au tour précédent.
+  * `decision` : la décision prise au tour précédent (un objet `Decision` exactement comme celui retourné par `OnQueenTurn` et `OnWorkerTurn`)
+* `mindset` : une enum donnant le midset actuel de la fourmi ; c'est **la seule donnée fiable** qu'une fourmi porte sur elle (fiable, car les points de vie, l'énergie et la nourriture sont aussi portées par la fourmi, mais sont trop floues pour être utilisées comme bases de donnée).
+* `pheromones` : une liste de 0 à 4 `PheromoneDigest`, décrivant chacun une phéromone (ayant une enum de type et une direction) **sur la case de la fourmi**.
+* `adjacentPheromoneGroups`, un dictionnaire de `HexDirection` (donc une des six directions d'un hexagone) en clés et de listes de 0 à 4 phéromones en valeurs ; chaque entrée du dictionnaire (qui en a toujours 6) correspond à une direction et à toutes les phéromones sur la case adjacente dans cette direction.
+* `energy`, `hp` et `carriedFood` : trois enum `Value` donnant les niveaux respectivement d'énergie, de points de vie et de nourriture transportée ; l'enum `Value` décrit une valeur entre 0 et 100 inclus, avec `Value.NONE` pour 0, `Value.LOW` de 1 à 33, `Value.MEDIUM` de 34 à 66 et `Value.HIGH` pour 67 et au-dessus.
+* `analyseReport` : un objet de rapport d'analyse, qui vaut `null` en temps normal mais qui se remplit lorsqu'une analyse a été faite par la fourmi au tour précédent, avec succès :
+  * `terrainType` : le type de tarrain sur la case.
+  * `antType` : le type de fourmi sur la case, qui vaut `AntType.None` s'il n'y a pas de fourmi.
+  * `egg` : un bolléen disant si la case contient un oeuf de fourmi.
+  * `isAllied` : un booléen disant si la fourmi ou l'oeuf de la case est de la même équipe que la fourmi.
+  * `foodValue` : une `Value` estimant la quantité de nourriture sur la case ; **attention, la quantité de nourriture sur une case peut dépasser 100** et la Value est calculée de 0 à la valeur max de nourriture par case, donnée dans le fichier `Const.cs`.
+  * `pheromones` : la liste des phéromones de la case
+* `communicateReport` : un objet de rapport de communication, qui vaut `null` en temps normal mais qui se remplit lorsqu'une communication a été faite par la fourmi au tour précédent, avec succès :
+  * `type` : le type de la fourmi en face (enfin, celle avec laquelle la communication a été faite).
+  * `mindset` : le mindset de la fourmi en face.
+  * `energy`, `hp` et `carriedFood` : les valeurs interne de la fourmi en face.
+  * `word` : un mot communiqué par la fourmi en face, qui vaut toujours `AntWord.NONE` car c'est la fourmi en train de jouer qui a parlé à l'autre et pas l'inverse (**le `word` n'a une valeur que quand c'est une communication entrante, via les `eventInputs`**)
+* `eventInputs` : une liste d'objets `EventInputs` décrivant tout ce qui est arrivé à la fourmi entre le tour précédent et ce tour ; chaque `EventInput` contient la direction d'origine de l'input et le type de l'input :
+  * `EventInputType.BUMP` si une fourmi a tenté de faire une action, mais a été bloquée par cette fourmi.
+  * `EventInputType.ATTACK` si une fourmi a attaqué cette fourmi.
+  * `EventInputType.COMMUNICATE` si une fourmi a communiqué avec cette fourmi ; la fourmi reçoit alors dans cet `EventInput` toutes les informations de la communication sous la forme d'un objet `CommunicateReport` à l'intérieut de l'input (**le `CommunicateReport` aura donc, dans ce cas-là, un `word`**).
+* `id` : un entier servant d'identifiant à la fourmi ; il n'a aucune utilité de gameplay, mais permet par exemple de suivre une fourmi au milieu de tous les affichages de debug que l'on fait.
+
+### Données en sortie
+
+Les méthodes `OnQueenTurn` et `OnWorkerTurn` retournent un objet `Decision`, décrivant leur action et tout ce qui va autour :
+* `newMindset` : le nouveau mindset de a fourmi (donc celui qu'elle aura au prochain tour), sous la forme d'une enum `AntMindset`
+* `choice` : un objet `ChoiceDescriptor` décrivant l'action effectuée par la fourmi ; cet objet peut être avantageusement généré par les méthodes statiques de `ChoiceDescriptor` (voir la section sur les actions)
+* `pheromones` : une `List<PheromoneDigest>` décrivant la nouvelle configuration des phéromones sur la case de la fourmi ; **cette configuration est faite juste avant l'action de la fourmi, sur la case de départ de la fourmi**
+
+### Actions possibles
+
+## `None`
+
+La fourmi passe son tour. Il est à noter ça ne lui empêche pas de déposer des phéromones et de changer son mindset. La plupart du temps, une action None peut avantageusement être remplacée par une action `Analyse`ou `Communicate`, qui ne font pas non plus grand-chose et qui permettent à la fourmi d'avoir des informations supplémentaires.
+
+**Méthode de génération :** `ChoiceDescriptor.ChooseNone()`
+
+**Arguments :** aucun
+
+**Effets secondaires :** aucun
+
+**Erreurs possibles :** aucune
+
+## `Move`
+
+La fourmi se déplace d'une case, dans une direction choisie.
+
+**Méthode de génération :** `ChoiceDescriptor.ChooseMove(HexDirection direction)`
+
+**Arguments :**
+* direction : la direction dans laquelle la fourmi doit aller
+
+**Effets secondaires :**
+* Si le mouvement de la fourmi est bloqué par une autre fourmi, cette dernière reçoit un `BUMP` dans son `eventList`
+
+**Erreurs possibles :**
+* `ILLEGAL` si la direction désignée est `CENTER`
+* `COLLISION_VOID` si la direction désignée est en dehors des limites de la carte
+* `COLLISION_VOID` si la case désignée est un trou (donc où il n'y a même pas de terrain)
+* `COLLISION_ANT` si la case est déjà occupée par une fourmi
+* `COLLISION_FOOD` si la case est occupée par de la nourriture
+* `COLLISION_EGG` si la case est occupée par un oeuf
+* `COLLISION_WATER` si la case est une case d'eau
+* `NO_ENERGY` si le moyvement co^te de l'énergie et que la fourmi n'en a plus assez
+
+## `Attack`
+
+La fourmi attaque dans la direction indiquée. La fourmi en face perd autant de points de vie que les dégâts de l'attaque, spécifiés dans `Const.cs`.
+
+**Méthode de génération :** `ChoiceDescriptor.ChooseAttack(HexDirection direction)`
+
+**Arguments :**
+* direction : la direction dans laquelle la fourmi doit attaquer
+
+**Effets secondaires :**
+* Si l'attaque a fonctionné, la victime reçoit un `ATTACK` dans son `eventList`
+
+**Erreurs possibles :**
+* `ILLEGAL` si la direction désignée est `CENTER`
+* `NO_TARGET` si la case désignée ne contient pas de fourmi
+* `NOT_ENEMY` si la case désignée contient une fourmi alliée (l'action est alors annulée)
+* `NO_ENERGY` si le moyvement co^te de l'énergie et que la fourmi n'en a plus assez
+
+## `Eat`
+
+La fourmi mange une quantité indiquée en paramètre de nourriture contenue dans la case adjacente indiquée pour augmenter son énergie. Un point de nourriture donne un point d'énergie à la fourmi, qui ne paut pas avoir plus d'énergie que 100, et ne peut pas manger plus de nourriture en un tour que ce qui est indiqué dans `Const.cs`. Tout excès est laissé à la case contenant la nourriture.
+Par exemple :
+* Une case contient 130 de nourriture
+* Une fourmi essaie d'en manger 100
+* La limite de nourriture consommée par tour est de 30
+* La fourmi est déjà à 80 d'énergie
+* L'action fait que la fourmi mange 20 de nourriture pour passer à 100 d'énergie, et il reste 110 de nourriture à la case.
+
+Si une fourmi veut consommer so stock de nourriture (`carriedFood`), elle paut faire l'action en désignant la direction `CENTER`.
+
+**Méthode de génération :** `ChoiceDescriptor.ChooseEat(HexDirection direction, int quantity)`
+
+**Arguments :**
+* direction : la direction dans laquelle la fourmi doit manger
+* quantity : la quantité de nourriture que la fourmi doit essayer de manger
+
+**Effets secondaires :**
+* Si la case désignée est bloquée par une autre fourmi, cette dernière reçoit un `BUMP` dans son `eventList`
+
+**Erreurs possibles :**
+* `NO_FOOD` si la direction désignée est `CENTER` et que la fourmi n'a pas de `carriedFood`
+* `COLLISION_VOID` si la direction désignée est en dehors des limites de la carte
+* `COLLISION_VOID` si la case désignée est un trou (donc où il n'y a même pas de terrain)
+* `NO_TARGET` si la case désignée ne contient pas de nourriture
+
+## `Stock`
+
+La fourmi stocke une quantité indiquée en paramètre de nourriture contenue dans la case indiquée. Elle la stocke dans sa réserve de `carriedFood`, et ne peut pas en stocker plus que 100. Elle ne peut pas non plus stocker plus de nourriture en un tour que ce qui est indiqué dans `Const.cs`. Tout excès est laissé à la case contenant la nourriture.
+Par exemple :
+* Une case contient 130 de nourriture
+* Une fourmi essaie d'en stocker 100
+* La limite de nourriture consommée par tour est de 50
+* La fourmi est déjà à 70 de nourriture stockée
+* L'action fait que la fourmi stocke 30 de nourriture, et il reste 100 de nourriture à la case.
+
+**Méthode de génération :** `ChoiceDescriptor.ChooseStock(HexDirection direction, int quantity)`
+
+**Arguments :**
+* direction : la direction depuis laquelle la fourmi doit stocker
+* quantity : la quantité de nourriture que la fourmi doit essayer de stocker
+
+**Effets secondaires :**
+* Si la case désignée est bloquée par une autre fourmi, cette dernière reçoit un `BUMP` dans son `eventList`
+
+**Erreurs possibles :**
+* `ILLEGAL` si la direction désignée est `CENTER`
+* `COLLISION_VOID` si la direction désignée est en dehors des limites de la carte
+* `COLLISION_VOID` si la case désignée est un trou (donc où il n'y a même pas de terrain)
+* `NO_TARGET` si la case désignée ne contient pas de nourriture
+
+## `Give`
+
+La fourmi donne à la fourmi dans la case indiquée une quantité indiquée en paramètre de nourriture. La nourriture ira dans la `carriedFood` de la fourmi bénéficiaire, qui ne peut pas dépasser 100, et bien sûr la donneuse ne peut donner que ce qu'elle a. De plus, une fourmi ne peut pas donner en un tour plus que ce qui est spécifié dans `Const.cs`. Tout excès est rendu à la donneuse.
+Par exemple :
+* Une fourmi A contient 80 de nourriture
+* Une fourmi B contient 70 de nourriture
+* A essaie de donner à B 100 de nourriture
+* La limite de don par tour est de 50
+* L'action fait que A passe à 50 de nourriture et B à 100
+
+**Méthode de génération :** `ChoiceDescriptor.ChooseGive(HexDirection direction, int quantity)`
+
+**Arguments :**
+* direction : la direction dans laquelle la fourmi doit donner
+* quantity : la quantité de nourriture que la fourmi doit essayer de donner
+
+**Effets secondaires :**
+* Si l'action réussit, la fourmi bénéficiaire reçoit un `GIVE` dans son `eventList`
+* Si la case désignée contient une fourmi ennemie, cette dernière reçoit un `BUMP` dans son `eventList`
+
+**Erreurs possibles :**
+* `ILLEGAL` si la direction désignée est `CENTER`
+* `COLLISION_VOID` si la direction désignée est en dehors des limites de la carte
+* `COLLISION_VOID` si la case désignée est un trou (donc où il n'y a même pas de terrain)
+* `NO_TARGET` si la case désignée ne contient pas de fourmi
+* `NOT_ALLY` si la fourmi sur la case désignée n'est pas alliée
+* `NO_ENERGY` si le don coûte de l'énergie et que la fourmi n'en a pas assez
+* `NO_FOOD` si la fourmi n'a pas de nourriture à donner
+
+## `Analyse`
+
+La fourmi analyse la case indiquée, pour recevoir au tour suivant un `AnalyseReport` (voir la section des données en entrée) décrivant la case pointée. C'est utile notamment pour déterminer si une fourmi adverse est reine ou pour estimer une quantité de nourriture.
+
+**Méthode de génération :** `ChoiceDescriptor.ChooseAnalyse(HexDirection direction)`
+
+**Arguments :**
+* direction : la direction dans laquelle la fourmi doit analyser
+
+**Effets secondaires :**
+* Si la case analysée contient une fourmi, cette dernière reçoit un `BUMP` dans son `eventList`
+
+**Erreurs possibles :**
+* `ILLEGAL` si la direction désignée est `CENTER`
+* `COLLISION_VOID` si la direction désignée est en dehors des limites de la carte
+* `COLLISION_VOID` si la case désignée est un trou (donc où il n'y a même pas de terrain)
+
+## `Communicate`
+
+La fourmi communique avec la fourmi se trouvant sur la case adjacente indiquée. La fourmi dont c'est le tour recevra au tour suivant un `CommunicateReport` donnant les informations de la fourmi ciblée, et la fourmi ciblée recevra dans ses `eventInputs` un input contenant les information de l'émettrice, ainsi que le mot d'ordre indiqué en paramètre.
+
+**Méthode de génération :** `ChoiceDescriptor.ChooseCommunicate(HexDirection direction, AntWord word)`
+
+**Arguments :**
+* direction : la direction dans laquelle la fourmi doit communiquer
+
+**Effets secondaires :**
+* Si l'action réussit, la fourmi cible reçoit un `COMMUNICATE` dans son `eventList`, contenant toutes les informations sur la fourmi émettrice et son mot d'ordre
+* Si la case désignée contient une fourmi ennemie, cette dernière reçoit un `BUMP` dans son `eventList`
+
+**Erreurs possibles :**
+* `ILLEGAL` si la direction désignée est `CENTER`
+* `COLLISION_VOID` si la direction désignée est en dehors des limites de la carte
+* `COLLISION_VOID` si la case désignée est un trou (donc où il n'y a même pas de terrain)
+* `NO_TARGET` si la case désignée ne contient pas de fourmi
+* `NOT_ALLY` si la fourmi sur la case désignée n'est pas alliée
+* `NO_ENERGY` si la communication coûte de l'énergie et que la fourmi n'en a pas assez
+
+## `Egg`
+
+La fourmi pond un oeuf dans la case adjacente indiquée. L'oeuf éclora plusieurs tours plus tard. Cette action ne peut fonctionner que si la fourmi est reine.
+
+**Méthode de génération :** `ChoiceDescriptor.ChooseEgg(HexDirection direction)`
+
+**Arguments :**
+* direction : la direction dans laquelle la fourmi doit pondre un oeuf
+
+**Effets secondaires :**
+* Si la pondaison est bloqué par une autre fourmi, cette dernière reçoit un `BUMP` dans son `eventList`
+
+**Erreurs possibles :**
+* `ILLEGAL` si la direction désignée est `CENTER`
+* `NOT_QUEEN` si l'action est commandée par une fourmi ouvrière plutôt que par la reine
+* `COLLISION_VOID` si la direction désignée est en dehors des limites de la carte
+* `COLLISION_VOID` si la case désignée est un trou (donc où il n'y a même pas de terrain)
+* `COLLISION_ANT` si la case est déjà occupée par une fourmi
+* `COLLISION_FOOD` si la case est occupée par de la nourriture
+* `COLLISION_EGG` si la case est occupée par un oeuf
+* `COLLISION_WATER` si la case est une case d'eau
+* `NO_ENERGY` si le moyvement co^te de l'énergie et que la fourmi n'en a plus assez
+
+### Tester l'IA
+
+Pour utiliser l'IA, elle doit être instanciée à l'endroit indiqué dans le `TornamentManager`. Il ne peut pas y avoir moins de 2 IAs u plus de 6 IAs.
+
+Les couleurs d'affichage des phéromones peuvent être réglées dans le GameObject TornamentManager, trouvable dans la hiérarchie de la scène sur Unity. Les autres paramètres sont modifiables dans le préfabriqué de GameManager.
+
+Une classe `Logger` permet d'enregistrer de grandes quantités de logs dans le fichier `Logs.txt`. Pour cela, il suffit d'utiliser les méthodes statiques `Logger.Info`, `Logger.Warning` et `Logger.Error`. Cette classe ne permet pas d'avoir les logs en diret, mais d'afficher bien plus de logs que la console Unity classique.
+
+### Déployer l'IA
+
+Avant de déployer l'IA, il faut placer son fichier dans le dossier `Active`, et enlever sa précédente IA pour la mettre dans `Inactive/<pseudo>`, car **il ne doit y avoir qu'une seule IA active par développer à tout instant**.
+
+Ensuite, à l'aide de Git, il faut `add` et `commit` **uniquement le travail sur ses IAs**. Aucune modification du moteur (y compris le `TornamentManager`) ou des IAs des autres joueurs. Ensuite, il faut `pull` pour s'assurer que tourne bien avec la dernière version du moteur (et faire des modifications si besoin est), puis `push`.
+
+## Interdits
+
+Sachant que tout dev peut regarder le code inactif des autres devs, il est interdit de rendre son code volontairement illisiible. De plus, il est interdit de regarder le code actif d'un autre dev.
+
+Il est interdit de stocker des données statiques, ou toute donnée extérieure aux portées des méthodes `OnQueenTurn` et `OnPlayerTurn`. La seule communication avec l'extérieur de ces portées se fait par les paramètrzs des méthodes et leurs valeurs de retour.
